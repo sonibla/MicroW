@@ -9,7 +9,7 @@
 
 ## License
 
-Mixed. License is stated at the beginning of every source code file - see the [LICENSE](LICENSE) file for details.
+Mixed. License is stated at the beginning of every source code file - see the [LICENSE](LICENSE.md) file for details.
 
 ## Authors
 
