@@ -9,7 +9,7 @@
 
 ## License
 
-This project is currently licensed under the [GNU General Public License v3.0](https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3)) - see the [LICENSE](LICENSE) file for details
+Mixed. License is stated at the beginning of every source code file - see the [LICENSE](LICENSE) file for details.
 
 ## Authors
 
