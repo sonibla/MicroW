@@ -20,6 +20,11 @@ Here is an overview of the inside of each module :
 
 ![overview modules](images/Overview_modules.png "Microw overview: modules")
 
+## Current project state
+
+Currently, only a short documentation is available.
+Embedded C codes for numerical processing and more documentation soon available
+
 ## License
 
 The content of this project itself is licensed under the [Creative Commons Attribution 4.0 International license](https://creativecommons.org/licenses/by/4.0/), and the underlying source code used to format 
