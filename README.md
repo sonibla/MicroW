@@ -2,9 +2,11 @@
 
 >  The Coxswain's voice is law.
 
- MicroW is a *wireless* device that transmits the coxswain's voice in a rowing boat. The coxswain has a *wireless* microphone, and several *wireless* speakers are in the boat.
+MicroW is a *wireless* device that transmits the coxswain's voice in a rowing boat. The coxswain has a *wireless* microphone, and several *wireless* speakers are in the boat.
 
-**This is a Work in Progress ! Come back in Avril 2020 to see more !**
+<p align="center">
+  <img src="https://github.com/sonibla/MicroW/blob/master/images/logo_small.png" alt="MicroW logo" height="90"/>
+</p>
 
 ## Overview
 
