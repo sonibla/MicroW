@@ -9,7 +9,8 @@
 
 ## License
 
-Mixed. License is stated at the beginning of every source code file - see the [LICENSE](LICENSE.md) file for details.
+The content of this project itself is licensed under the [Creative Commons Attribution 4.0 International license](https://creativecommons.org/licenses/by/4.0/), and the underlying source code used to format 
+and display that content is licensed under the [3-Clause BSD License](https://opensource.org/licenses/BSD-3-Clause).
 
 ## Authors
 
