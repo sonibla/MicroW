@@ -1,1 +1,0 @@
-Source code in this repository is covered by the license stated at the beginning of the concerned file. The default license throughout this repository is MIT License unless the header specifies another license.
