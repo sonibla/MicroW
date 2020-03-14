@@ -20,6 +20,8 @@ Here is an overview of the inside of each module :
 
 ![overview modules](images/Overview_modules.png "Microw overview: modules")
 
+Details about electrical circuits will be in [analog](analog) folder. Embedded C codes, radio transmission and everything digital related will be in [digital](digital) folder.
+
 ## Current project state
 
 Currently, only a short documentation is available.
