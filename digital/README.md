@@ -8,6 +8,40 @@ Every module (receiver and emitter) is equipped with a microcontroller that basi
 
 We use a sampling rate of 16kHz (most modern VoIP and VVoIP communication products sample at this frequency). The sampling rate is controlled by timers connected to ADC and DAC.  With a bit depth of 12 bits per sample, we only need a 192kb/s UART interface if we send samples without any data compression.
 
+## Usage
+
+### Building instructions
+
+You'll have to build the source codes twice. Once for the *emitter* module, and once for the *receiver* module.
+To configure wether you're building emitter or receiver binaries, you have to modify [config.h](https://github.com/sonibla/MicroW/blob/master/digital/STM32F429ZI%20Source%20codes/Core/Inc/config.h) file on line 13:
+
+To build emitter binaries :
+```
+#define MODULE_TYPE MICROW_EMITTER
+```
+
+To build reveiver binaries :
+```
+#define MODULE_TYPE MICROW_RECEIVER
+```
+
+Once you've set this setting, you can generate the binaries:
+```
+cd "STM32F429ZI Source codes/Build"
+make all
+```
+You'll have to download ```MicroW.bin``` file into your STM32F429ZI microcontroller. 
+
+### Wiring
+
+On the *emitter* module, connect the analog input to ```PAO``` pin (ADC) and the Xbee to ```PA10``` pin (UART_TX).
+
+On the *reveiver* module, connect the analog output to ```PA4``` pin (DAC) and the Xbee to ```PA9``` pin (UART_RX).
+
+### Porting to another microcontroller
+
+The easyest way to port this project to another microcontroller (after making sure the peripherals fit the requirements) is to create a new project (for example in STM32CUBEIDE), configure it according to your microcontroller, then import the codes.
+
 ## Third party documentation
 
  * [STM32F429ZI Reference Manual](https://www.st.com/resource/en/reference_manual/dm00031020.pdf)
