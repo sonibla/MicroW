@@ -6,7 +6,7 @@ Every module (receiver and emitter) is equipped with a microcontroller that basi
 
 ![microcontrollers details](../images/Microcontrollers_details.png "Microcontrollers details")
 
-We use a sampling rate of 16kHz (most modern VoIP and VVoIP communication products sample at this frequency). The sampling rate is controlled by timers connected to ADC and DAC.  With a bit depth of 12 bits per sample, we only need a 192kb/s UART interface if we send samples without any data compression.
+We use a sampling rate of 16kHz (most modern VoIP and VVoIP communication products sample at this frequency). A timer controlls the sampling rate of the ADC (and the refresh rate of the DAC). With a bit depth of 12 bits per sample, we only need a 192kb/s UART interface if we send samples without any data compression. We actually configured the UART interface at 230400 baud because it's the first standard value greater than 192000 baud.
 
 ## Usage
 
