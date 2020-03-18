@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "links.h"
+#include "config.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -107,7 +108,11 @@ int main(void)
   MX_DAC_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
+#if (MODULE_TYPE == MICROW_EMITTER)
   emitter_start(&huart1, &hadc1, &htim2);
+#else
+  receiver_start(&huart1, &hdac1, DAC_CHANNEL_1);
+#endif
   /* USER CODE END 2 */
 
   /* Infinite loop */
