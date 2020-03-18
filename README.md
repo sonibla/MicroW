@@ -32,7 +32,25 @@ Analog circuits, test tools and methods and more documentation soon available
 The content of this project itself is licensed under the [Creative Commons Attribution 4.0 International license](https://creativecommons.org/licenses/by/4.0/), and the underlying source code used to format 
 and display that content is licensed under the [3-Clause BSD License](https://opensource.org/licenses/BSD-3-Clause).
 
-## Authors
+## Contributors
+
+Current maintainers:
 
 * **Matthieu Planas**
 * [**Alban Benmouffek**](https://github.com/sonibla)
+
+People who previously worked on this project:
+
+* **Guillaume Bachelard**
+* **Martin Combeuil**
+* **Nicolas Kervinio**
+* **Victoire Malinovsky**
+* **Breval Mesureur**
+* **Alexia Vanson**
+
+Acknowledgements to:
+
+* **Florent Goutailler**
+* **Thomas Tang**
+* **Nicolas Simond**
+* **Vincent Ricchi**
