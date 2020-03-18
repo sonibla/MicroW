@@ -32,8 +32,26 @@ extern "C" {
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions prototypes ---------------------------------------------*/
-HAL_StatusTypeDef decoder_streamUpdate(uint16_t lastByteReceived);
-HAL_StatusTypeDef decoder_streamInit(uint8_t * stream, uint16_t length, uint64_t * value);
+
+/*
+ * decoder_streamStart initializes a stream to continuously decode data
+ */
+HAL_StatusTypeDef decoder_streamStart(struct bitStream_Info * bitStream, struct sampleStream_Info * sampleStream);
+
+/*
+ * decoder_streamRestart starts a stream without overwriting existing parameters.
+ */
+HAL_StatusTypeDef decoder_streamRetart();
+
+/*
+ * decoder_streamUpdate should be called at the end of new data saving
+ */
+HAL_StatusTypeDef decoder_streamUpdate();
+
+/*
+ * decoder_streamStop stops a running stream.
+ */
+HAL_StatusTypeDef decoder_streamStop();
 
 /* Private defines -----------------------------------------------------------*/
 

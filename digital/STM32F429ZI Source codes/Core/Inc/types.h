@@ -43,7 +43,9 @@ struct bitStream_Info
 	UART_HandleTypeDef * huart;
 	enum streamState state;
 	uint8_t * stream; // Buffer containing raw data flow
+	uint8_t byte; // The byte to send or receive
 	uint8_t lastBitOut; // Last bit successfully treated (in last byte out)
+	uint8_t synchronized;
 	uint16_t length; // Buffer's size
 	uint16_t lastByteIn; // Last new byte in the buffer
 	uint16_t lastByteOut; // Last byte successfully treated
@@ -78,7 +80,7 @@ struct sampleStream_Info
 /*
  * streamInit initializes sampleStream_Info and bitStream_Info structures with consistent data allowing to
  * immediately start the receiver or emitter.
- * The function's parameters depends on module's type because only ADC or DAC is needed, never both.
+ * The function definition depends on module's type because only ADC or DAC is needed, never both.
  *
  */
 #if (MODULE_TYPE == MICROW_EMITTER)

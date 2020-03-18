@@ -32,9 +32,26 @@ extern "C" {
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions prototypes ---------------------------------------------*/
-HAL_StatusTypeDef DAC_streamInit(DAC_HandleTypeDef * hdac, uint32_t Channel);
-HAL_StatusTypeDef DAC_streamUpdate(uint64_t value);
-void DAC_streamStop();
+
+/*
+ * DAC_streamStart initializes a stream to continuously decode data
+ */
+HAL_StatusTypeDef DAC_streamStart(struct sampleStream_Info * sampleStream);
+
+/*
+ * DAC_streamRestart starts a stream without overwriting existing parameters.
+ */
+HAL_StatusTypeDef DAC_streamRetart();
+
+/*
+ * DAC_streamUpdate should be called at the end of new data saving
+ */
+HAL_StatusTypeDef DAC_streamUpdate();
+
+/*
+ * DAC_streamStop stops a running stream.
+ */
+HAL_StatusTypeDef DAC_streamStop();
 
 /* Private defines -----------------------------------------------------------*/
 

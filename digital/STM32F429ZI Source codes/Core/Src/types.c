@@ -54,6 +54,8 @@ HAL_StatusTypeDef streamInit(struct sampleStream_Info * sampleStream, struct bit
 	bitStream->bytesSinceLastSyncSignal = SYNC_PERIOD + 1;
 
     bitStream->stream = NULL;
+	bitStream->byte = 0;
+	bitStream->synchronized = 0;
 
     bitStream->stream = malloc(bitStream->length * sizeof(uint8_t));
     if (bitStream->stream == NULL) {

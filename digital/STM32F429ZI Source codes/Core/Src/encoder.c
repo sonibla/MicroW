@@ -33,11 +33,34 @@ uint16_t maskSample;
 
 /* Private function prototypes -----------------------------------------------*/
 
+/*
+ * mask creates a number in which n LSBs are ones
+ */
 static uint64_t mask(uint8_t bits);
+
+/*
+ * sendByte saves a byte into the UART buffer
+ */
 static void sendByte(uint8_t byte);
+
+/*
+ * getSample returns the value of the sample to encode
+ */
 static uint64_t getSample();
+
+/*
+ * nextSample changes ADC_stream metadata to consider a new sample (the next one)
+ */
 static void nextSample();
+
+/*
+ * sampleAvailable checks if sample is (partially) available
+ */
 static uint8_t sampleAvailable();
+
+/*
+ * sendSyncSignal sends a synchronization byte instead of real data
+ */
 static void sendSyncSignal();
 
 /* Exported functions --------------------------------------------------------*/

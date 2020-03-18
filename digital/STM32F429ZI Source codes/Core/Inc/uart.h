@@ -61,9 +61,25 @@ HAL_StatusTypeDef UARTTx_streamStop();
                   ##### Receive functions #####
 =============================================================================*/
 
-HAL_StatusTypeDef UART_RxStreamInit(UART_HandleTypeDef * huart, uint8_t * buffer, uint16_t size);
-void UART_RxStreamHandle(UART_HandleTypeDef * huart);
-void UART_RxStreamStop();
+/*
+ * UARTRx_streamStart initializes a stream to continuously receive data
+ */
+HAL_StatusTypeDef UARTRx_streamStart(struct bitStream_Info * bitStream);
+
+/*
+ * UARTRx_streamRestart starts a stream without overwriting existing parameters.
+ */
+HAL_StatusTypeDef UARTRx_streamRetart();
+
+/*
+ * UARTRx_streamUpdate should be called at the end of data reception
+ */
+HAL_StatusTypeDef UARTRx_streamUpdate();
+
+/*
+ * UARTRx_streamStop stops a running stream.
+ */
+HAL_StatusTypeDef UARTRx_streamStop();
 
 /* Private defines -----------------------------------------------------------*/
 

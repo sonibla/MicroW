@@ -43,7 +43,15 @@ struct bitStream_Info * UART_stream;
 
 /* Private function prototypes -----------------------------------------------*/
 
+/*
+ * dataAvailable returns 1 if new data is in the buffer
+ */
 static uint8_t dataAvailable();
+
+/*
+ * saveByte saves given byte into the buffer
+ */
+static void saveByte(uint8_t byte);
 
 /* Exported functions --------------------------------------------------------*/
 
@@ -62,7 +70,9 @@ HAL_StatusTypeDef UARTTx_streamUpdate() {
 		if (UART_stream->lastByteOut >= UART_stream->length) {
 			UART_stream->lastByteOut = 0;
 		}
-		return HAL_UART_Transmit_DMA(UART_stream->huart, &((UART_stream->stream)[UART_stream->lastByteOut]), 1);
+
+		UART_stream->byte = (UART_stream->stream)[UART_stream->lastByteOut];
+		return HAL_UART_Transmit_DMA(UART_stream->huart, &(UART_stream->byte), 1);
 	}
 
 	return HAL_OK;
@@ -91,40 +101,54 @@ HAL_StatusTypeDef UARTTx_streamStop() {
                   ##### Receive functions #####
 =============================================================================*/
 
-HAL_StatusTypeDef UART_RxStreamInit(UART_HandleTypeDef * huart, uint8_t * buffer, uint16_t size) {
+HAL_StatusTypeDef UARTRx_streamStart(struct bitStream_Info * bitStream) {
+	UART_HandleTypeDef * huart;
+	UART_stream = bitStream;
 
+	huart = UART_stream->huart;
 	if ((*huart).Init.Mode != UART_MODE_TX_RX && (*huart).Init.Mode != UART_MODE_RX) {
 		return HAL_ERROR;
 	}
 
-	RxStream.huart = huart;
-	RxStream.buffer = buffer;
-	RxStream.cursor = 0;
-	RxStream.byte = 0;
-	RxStream.size = size;
-	RxStream.active = 1;
-
-	return HAL_UART_Receive_DMA(huart, &(RxStream.byte), 1);
+	UART_stream->state = BUSY;
+	return HAL_UART_Receive_DMA(UART_stream->huart, &(UART_stream->byte), 1);
 }
 
-void UART_RxStreamHandle(UART_HandleTypeDef * huart) {
+HAL_StatusTypeDef UARTRx_streamRetart() {
+	UART_stream->state = BUSY;
+	return HAL_UART_Receive_DMA(UART_stream->huart, &(UART_stream->byte), 1);
+}
+
+HAL_StatusTypeDef UARTRx_streamUpdate() {
 	// Immediately restart the UART so that we don't miss any bit
-	uint8_t value = RxStream.byte;
-	HAL_UART_Receive_DMA(huart, &(RxStream.byte), 1);
+	HAL_StatusTypeDef status = HAL_OK;
+	uint8_t value = UART_stream->byte;
 
-	if (RxStream.active) {
-		// Save the last value in the buffer
-		RxStream.cursor += 1;
-		if (RxStream.cursor == RxStream.size) {
-			RxStream.cursor = 0;
-		}
-		(RxStream.buffer)[RxStream.cursor] = value;
+	if (UART_stream->state != INACTIVE) {
+		status = UARTRx_streamRetart();
 	}
-	RxFinishedHandle(RxStream.cursor);
+	else {
+		return HAL_ERROR;
+	}
+
+	saveByte(value);
+
+	UARTRx_FinishedHandle();
+	return status;
 }
 
-void UART_RxStreamStop() {
-	RxStream.active = 0;
+static void saveByte(uint8_t byte) {
+	UART_stream->lastByteIn += 1;
+	if (UART_stream->lastByteIn >= UART_stream->length) {
+		UART_stream->lastByteIn = 0;
+	}
+	(UART_stream->stream)[UART_stream->lastByteIn] = byte;
+}
+
+HAL_StatusTypeDef UARTRx_streamStop() {
+	UART_stream->state = INACTIVE;
+
+	return HAL_UART_Abort(UART_stream->huart);
 }
 
 /*=============================================================================

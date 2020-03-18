@@ -65,8 +65,10 @@ void Timer_RisingEdgeHandle();
  */
 void encode_FinishedHandle();
 
-void RxFinishedHandle(uint16_t lastByteReceived);
-void DecodeFinishedHandle();
+/*
+ * UARTRx_FinishedHandle will be called by UART API when the UART buffer in has been updated
+ */
+void UARTRx_FinishedHandle();
 
 /*=============================================================================
                     ##### Main API functions #####
@@ -84,7 +86,7 @@ void emitter_stop();
  * into an analog signal.
  * Non blocking function
  */
-HAL_StatusTypeDef receiver_start(UART_HandleTypeDef * huart, DAC_HandleTypeDef * hdac, uint32_t DAC_Channel);
+HAL_StatusTypeDef receiver_start(UART_HandleTypeDef * huart, DAC_HandleTypeDef * hdac, uint32_t DAC_Channel, TIM_HandleTypeDef * htim);
 void receiver_stop();
 
 /* Private defines -----------------------------------------------------------*/

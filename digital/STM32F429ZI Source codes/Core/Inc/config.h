@@ -23,7 +23,7 @@
 #define MICROW_RECEIVER 1
 
 // Emitter / Receiver config
-#define MODULE_TYPE MICROW_EMITTER
+#define MODULE_TYPE MICROW_RECEIVER
 
 // UART config
 #define RX_BUFFER_SIZE 128

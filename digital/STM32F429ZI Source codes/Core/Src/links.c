@@ -31,8 +31,7 @@
 /* Private typedef -----------------------------------------------------------*/
 /* Private macros ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-uint64_t value;
-uint8_t RxBuffer[RX_BUFFER_SIZE] = {0};
+
 struct sampleStream_Info sampleStream;
 struct bitStream_Info bitStream;
 
@@ -57,7 +56,7 @@ void HAL_ADC_ErrorCallback(ADC_HandleTypeDef * hadc) {
 // UART
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef * huart) {
-	UART_RxStreamHandle(huart);
+	UARTRx_streamUpdate();
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef * huart) {
@@ -65,7 +64,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef * huart) {
 }
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef * huart) {
-	UART_RxStreamHandle(huart);
+	UARTRx_streamUpdate();
 }
 
 /*=============================================================================
@@ -78,7 +77,7 @@ void Timer_RisingEdgeHandle() {
 			ADC_streamRestart();
 		}
 		else {
-			DAC_streamUpdate(value);
+			DAC_streamUpdate();
 		}
 	}
 }
@@ -91,12 +90,8 @@ void encode_FinishedHandle() {
 	UARTTx_streamUpdate();
 }
 
-void RxFinishedHandle(uint16_t lastByteReceived) {
-	decoder_streamUpdate(lastByteReceived);
-}
-
-void DecodeFinishedHandle() {
-	DAC_streamUpdate(value);
+void UARTRx_FinishedHandle() {
+	decoder_streamUpdate();
 }
 
 /*=============================================================================
@@ -123,33 +118,39 @@ HAL_StatusTypeDef emitter_start(UART_HandleTypeDef * huart, ADC_HandleTypeDef * 
 }
 
 void emitter_stop() {
+#if (MODULE_TYPE == MICROW_EMITTER)
 	ADC_streamStop();
 
 	encoder_streamStop();
 
 	UARTTx_streamStop();
+#endif
 }
 
-HAL_StatusTypeDef receiver_start(UART_HandleTypeDef * huart, DAC_HandleTypeDef * hdac, uint32_t DAC_Channel) {
+HAL_StatusTypeDef receiver_start(UART_HandleTypeDef * huart, DAC_HandleTypeDef * hdac, uint32_t DAC_Channel, TIM_HandleTypeDef * htim) {
+#if (MODULE_TYPE == MICROW_RECEIVER)
+	streamInit(&sampleStream, &bitStream, hdac, DAC_Channel, huart);
 
-	HAL_StatusTypeDef status;
+	Timer_Start(htim);
 
-	status = DAC_streamInit(hdac, DAC_Channel);
-	if (status != HAL_OK) {
-		return status;
-	}
+	DAC_streamStart(&sampleStream);
 
-	status = decoder_streamInit(RxBuffer, RX_BUFFER_SIZE, &value);
-	if (status != HAL_OK) {
-		return status;
-	}
+	decoder_streamStart(&bitStream, &sampleStream);
 
-	status = UART_RxStreamInit(huart, RxBuffer, RX_BUFFER_SIZE);
-	return status;
+	UARTRx_streamStart(&bitStream);
+
+	return HAL_OK;
+#else
+	return HAL_ERROR;
+#endif
 }
 
 void receiver_stop() {
-	UART_RxStreamStop();
+#if (MODULE_TYPE == MICROW_RECEIVER)
+	UARTRx_streamStop();
+
+	decoder_streamStop();
 
 	DAC_streamStop();
+#endif
 }

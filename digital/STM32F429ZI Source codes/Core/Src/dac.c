@@ -20,33 +20,70 @@
 
 #include "stm32f4xx_hal.h"
 #include "config.h"
+#include "types.h"
 
 /* Private typedef -----------------------------------------------------------*/
-
-struct DAC_Config
-{
-	DAC_HandleTypeDef * hdac;
-	uint32_t Channel;
-};
-
 /* Private defines -----------------------------------------------------------*/
 /* Private macros ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-struct DAC_Config config;
+
+struct sampleStream_Info * DAC_stream;
 
 /* Private function prototypes -----------------------------------------------*/
+
+/*
+ * sampleAvailable checks if a new sample is available
+ */
+static uint8_t sampleAvailable();
+
 /* Exported functions --------------------------------------------------------*/
 
-HAL_StatusTypeDef DAC_streamInit(DAC_HandleTypeDef * hdac, uint32_t Channel) {
-	config.hdac = hdac;
-	config.Channel = Channel;
-	return HAL_DAC_Start(hdac, Channel);
+HAL_StatusTypeDef DAC_streamStart(struct sampleStream_Info * sampleStream) {
+	DAC_stream = sampleStream;
+	DAC_stream->state = ACTIVE;
+
+	return HAL_DAC_Start(DAC_stream->hdac, DAC_stream->DAC_Channel);
 }
 
-HAL_StatusTypeDef DAC_streamUpdate(uint64_t value) {
-	return HAL_DAC_SetValue(config.hdac, config.Channel, DAC_ALIGN_12B_R, (uint32_t)value);
+HAL_StatusTypeDef DAC_streamRetart() {
+	return HAL_DAC_Start(DAC_stream->hdac, DAC_stream->DAC_Channel);
 }
 
-void DAC_streamStop() {
-	HAL_DAC_Stop(config.hdac, config.Channel);
+HAL_StatusTypeDef DAC_streamUpdate() {
+	uint64_t value;
+
+	if (sampleAvailable()) {
+		DAC_stream->lastSampleOut += 1;
+		if (DAC_stream->lastSampleOut >= DAC_stream->length) {
+			DAC_stream->lastSampleOut = 0;
+		}
+		value = (DAC_stream->stream)[DAC_stream->lastSampleOut];
+
+		return HAL_DAC_SetValue(DAC_stream->hdac, DAC_stream->DAC_Channel, DAC_ALIGN_12B_R, (uint32_t)value);
+	}
+	else {
+		return HAL_OK;
+	}
 }
+
+static uint8_t sampleAvailable() {
+	// Check if a new sample is available
+	if (DAC_stream->lastSampleIn < DAC_stream->lastSampleOut) {
+		if (DAC_stream->lastSampleIn + DAC_stream->length > DAC_stream->lastSampleOut) {
+			return 1;
+		}
+	}
+	else {
+		if (DAC_stream->lastSampleIn > DAC_stream->lastSampleOut) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
+HAL_StatusTypeDef DAC_streamStop() {
+	DAC_stream->state = INACTIVE;
+
+	return HAL_DAC_Stop(DAC_stream->hdac, DAC_stream->DAC_Channel);
+}
+
