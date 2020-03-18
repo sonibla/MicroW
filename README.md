@@ -25,7 +25,7 @@ Details about electrical circuits will be in [analog](analog) folder. Embedded C
 ## Current project state
 
 Currently, only embedded C codes are available.
-Analog circuits and more documentation soon available
+Analog circuits, test tools and methods and more documentation soon available
 
 ## License
 
