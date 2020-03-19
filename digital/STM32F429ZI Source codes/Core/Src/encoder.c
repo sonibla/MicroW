@@ -39,9 +39,15 @@ uint16_t maskSample;
 static uint64_t mask(uint8_t bits);
 
 /*
- * sendByte saves a byte into the UART buffer
+ * sendTrueByte saves a byte into the UART buffer without modifying data
  */
-static void sendByte(uint8_t byte);
+static void sendTrueByte(uint8_t byte);
+
+/*
+ * sendByte saves a byte into the UART buffer, but toggles the LSB if byte == SYNC_SIGNAL
+ * LSB between 0 and 7.
+ */
+static void sendByte(uint8_t byte, uint8_t LSB);
 
 /*
  * getSample returns the value of the sample to encode
@@ -92,6 +98,7 @@ HAL_StatusTypeDef encoder_streamUpdate(){
 	uint8_t bit;
 	uint8_t bit_value;
 	uint8_t byte;
+	uint8_t LSB;
 	uint64_t sample;
 
 	if (ADC_stream->state == INACTIVE || UART_stream->state == INACTIVE) {
@@ -113,7 +120,9 @@ HAL_StatusTypeDef encoder_streamUpdate(){
 				ADC_stream->bitsOut += 1;
 			}
 
-			sendByte(byte);
+			// LSB = 7 because considered byte is fully inside a sample
+			LSB = sizeof(uint8_t) - 1;
+			sendByte(byte, LSB);
 		}
 
 		// Check if the above process encoded an entire sample
@@ -137,6 +146,7 @@ HAL_StatusTypeDef encoder_streamUpdate(){
 			}
 
 			// Now we continue the same process with next sample
+			LSB = bit;
 			nextSample();
 			sample = getSample();
 
@@ -147,7 +157,7 @@ HAL_StatusTypeDef encoder_streamUpdate(){
 				bit += 1;
 			}
 
-			sendByte(byte);
+			sendByte(byte, LSB);
 		}
 	}
 
@@ -190,7 +200,7 @@ static uint64_t getSample() {
 	}
 }
 
-static void sendByte(uint8_t byte) {
+static void sendTrueByte(uint8_t byte) {
 	UART_stream->lastByteIn += 1;
 	if (UART_stream->lastByteIn >= UART_stream->length) {
 		UART_stream->lastByteIn = 0;
@@ -199,8 +209,32 @@ static void sendByte(uint8_t byte) {
 	UART_stream->bytesSinceLastSyncSignal += 1;
 }
 
+static void sendByte(uint8_t byte, uint8_t LSB) {
+	uint8_t mask;
+
+	if (LSB >= sizeof(uint8_t)) {
+		// Default value in case of error:
+		LSB = sizeof(uint8_t) - 1;
+	}
+
+	mask = 0x80 >> LSB;
+
+	if (byte == SYNC_SIGNAL) {
+		if (byte & mask) {
+			// byte's LSB is a 1
+			byte &= ~mask;
+		}
+		else {
+			// byte's LSB is a 0
+			byte |= mask;
+		}
+	}
+
+	sendTrueByte(byte);
+}
+
 static void sendSyncSignal() {
-	sendByte(SYNC_SIGNAL);
+	sendTrueByte(SYNC_SIGNAL);
 	if (ADC_stream->bitsOut != 0) {
 		nextSample();
 	}
