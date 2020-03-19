@@ -11,7 +11,7 @@ Main API to manage the receiver or emitter is in [links.h](Core/Inc/links.h). Th
 ### Building instructions
 
 You'll have to build the source codes twice. Once for the *emitter* module, and once for the *receiver* module.
-To configure wether you're building emitter or receiver binaries, you have to modify [config.h](https://github.com/sonibla/MicroW/blob/master/digital/STM32F429ZI%20Source%20codes/Core/Inc/config.h) file on line 13:
+To configure wether you're building emitter or receiver binaries, you have to modify [config.h](https://github.com/sonibla/MicroW/blob/master/digital/STM32F429ZI%20Source%20codes/Core/Inc/config.h) file on line 26:
 
 To build emitter binaries :
 ```
