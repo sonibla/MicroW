@@ -13,6 +13,7 @@ Source codes of the microcontrollers and corresponding documentation are in [STM
 ## Third party documentation
 
  * [STM32F429ZI Reference Manual](https://www.st.com/resource/en/reference_manual/dm00031020.pdf)
+ * [ARM® Cortex®-M4 Technical Reference Manual](https://static.docs.arm.com/100166/0001/arm_cortexm4_processor_trm_100166_0001_00_en.pdf)
  * [Description of STM32F4 HAL and LL drivers](https://www.st.com/resource/en/user_manual/dm00105879.pdf)
  * [XBee/XBee-PRO S1 802.15.4 Reference Manual](https://www.digi.com/resources/documentation/digidocs/pdfs/90000982.pdf)
 
