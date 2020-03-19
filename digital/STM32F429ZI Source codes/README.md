@@ -10,6 +10,11 @@ Main API to manage the receiver or emitter is in [links.h](Core/Inc/links.h). Th
 
 ### Building instructions
 
+Since the microcontroller we use has an ARM processor ([Cortex-M4](https://developer.arm.com/ip-products/processors/cortex-m/cortex-m4)), you'll need the ARM compiler. You can use this command line to install it on Debian-based operating systems:
+```
+sudo apt install gcc-arm-none-eabi
+```
+
 You'll have to build the source codes twice. Once for the *emitter* module, and once for the *receiver* module.
 To configure wether you're building emitter or receiver binaries, you have to modify [config.h](https://github.com/sonibla/MicroW/blob/master/digital/STM32F429ZI%20Source%20codes/Core/Inc/config.h) file on line 26:
 
