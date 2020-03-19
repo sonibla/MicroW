@@ -38,7 +38,7 @@ On the *receiver* module, connect the analog output to ```PA4``` pin (DAC) and t
 
 ### Porting to another microcontroller
 
-The easyest way to port this project to another microcontroller (after making sure the peripherals fit the requirements) is to create a new project (for example in STM32CUBEIDE), configure it according to your microcontroller, then import the codes.
+The easyest way to port this project to another microcontroller (after making sure the peripherals fit the requirements) is to create a new project (for example in STM32CubeIDE), configure it according to your microcontroller, then import the codes.
 
 ## License
 
