@@ -60,7 +60,7 @@ static uint64_t getSample();
 static void nextSample();
 
 /*
- * sampleAvailable checks if sample is (partially) available
+ * sampleAvailable checks if sample is available
  */
 static uint8_t sampleAvailable();
 
@@ -105,23 +105,23 @@ HAL_StatusTypeDef encoder_streamUpdate(){
 		return HAL_BUSY;
 	}
 
-
+	uint64_t debug = 0;
 	while(sampleAvailable()) {
-
+		debug++;
 		sample = getSample();
 
-		while (WORD_LENGTH - ADC_stream->bitsOut >= sizeof(uint8_t)) {
+		while (WORD_LENGTH - ADC_stream->bitsOut >= 8) {
 			// We can fill a full uint8_t with the last new sample
 			byte = 0;
 
-			for(bit = 0; bit < sizeof(uint8_t); bit++) {
+			for(bit = 0; bit < 8; bit++) {
 				bit_value = (sample & (0x01 << (WORD_LENGTH - 1 - ADC_stream->bitsOut))) >> (WORD_LENGTH - 1 - ADC_stream->bitsOut);
-				byte += bit_value << (sizeof(uint8_t) - bit);
+				byte += bit_value << (8 - bit);
 				ADC_stream->bitsOut += 1;
 			}
 
 			// LSB = 7 because considered byte is fully inside a sample
-			LSB = sizeof(uint8_t) - 1;
+			LSB = 8 - 1;
 			sendByte(byte, LSB);
 		}
 
@@ -140,7 +140,7 @@ HAL_StatusTypeDef encoder_streamUpdate(){
 
 			while(WORD_LENGTH > ADC_stream->bitsOut) {
 				bit_value = (sample & (0x01 << (WORD_LENGTH - 1 - ADC_stream->bitsOut))) >> (WORD_LENGTH - 1 - ADC_stream->bitsOut);
-				byte += bit_value << (sizeof(uint8_t) - bit);
+				byte += bit_value << (8 - bit);
 				ADC_stream->bitsOut += 1;
 				bit += 1;
 			}
@@ -150,9 +150,9 @@ HAL_StatusTypeDef encoder_streamUpdate(){
 			nextSample();
 			sample = getSample();
 
-			while(bit < sizeof(uint8_t)) {
+			while(bit < 8) {
 				bit_value = (sample & (0x01 << (WORD_LENGTH - 1 - ADC_stream->bitsOut))) >> (WORD_LENGTH - 1 - ADC_stream->bitsOut);
-				byte += bit_value << (sizeof(uint8_t) - bit);
+				byte += bit_value << (8 - bit);
 				ADC_stream->bitsOut += 1;
 				bit += 1;
 			}
@@ -166,7 +166,6 @@ HAL_StatusTypeDef encoder_streamUpdate(){
 }
 
 static uint8_t sampleAvailable() {
-	// Check if an entire new sample is available
 	if (ADC_stream->lastSampleIn < ADC_stream->lastSampleOut) {
 		if (ADC_stream->lastSampleIn + ADC_stream->length > ADC_stream->lastSampleOut) {
 			return 1;
@@ -176,9 +175,6 @@ static uint8_t sampleAvailable() {
 		if (ADC_stream->lastSampleIn > ADC_stream->lastSampleOut) {
 			return 1;
 		}
-	}
-	if (WORD_LENGTH > ADC_stream->bitsOut) {
-		return 1;
 	}
 	return 0;
 }
@@ -212,9 +208,9 @@ static void sendTrueByte(uint8_t byte) {
 static void sendByte(uint8_t byte, uint8_t LSB) {
 	uint8_t mask;
 
-	if (LSB >= sizeof(uint8_t)) {
+	if (LSB >= 8) {
 		// Default value in case of error:
-		LSB = sizeof(uint8_t) - 1;
+		LSB = 8 - 1;
 	}
 
 	mask = 0x80 >> LSB;

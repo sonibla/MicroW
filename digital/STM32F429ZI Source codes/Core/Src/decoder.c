@@ -53,7 +53,7 @@ HAL_StatusTypeDef decoder_streamStart(struct bitStream_Info * bitStream, struct 
 	DAC_stream = sampleStream;
 	UART_stream = bitStream;
 
-	if (UART_stream->length < 1 + WORD_LENGTH/sizeof(uint8_t)) {
+	if (UART_stream->length < 1 + WORD_LENGTH/8) {
 		return HAL_ERROR;
 	}
 

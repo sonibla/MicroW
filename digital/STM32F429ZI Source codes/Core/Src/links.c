@@ -36,6 +36,12 @@ struct sampleStream_Info sampleStream;
 struct bitStream_Info bitStream;
 
 /* Private function prototypes -----------------------------------------------*/
+
+/*
+ * Error_Handler is called whenever an unexpected error happen
+ */
+static void Error_Handler(void);
+
 /* Exported functions --------------------------------------------------------*/
 
 
@@ -50,7 +56,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef * hadc) {
 }
 
 void HAL_ADC_ErrorCallback(ADC_HandleTypeDef * hadc) {
-	ADC_streamUpdate();
+	Error_Handler();
 }
 
 // UART
@@ -64,12 +70,16 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef * huart) {
 }
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef * huart) {
-	UARTRx_streamUpdate();
+	Error_Handler();
 }
 
 /*=============================================================================
                       ##### "Handle" functions #####
 =============================================================================*/
+
+static void Error_Handler(void) {
+
+}
 
 void Timer_RisingEdgeHandle() {
 	if (sampleStream.state == ACTIVE) {
@@ -99,58 +109,113 @@ void UARTRx_FinishedHandle() {
 =============================================================================*/
 
 HAL_StatusTypeDef emitter_start(UART_HandleTypeDef * huart, ADC_HandleTypeDef * hadc, TIM_HandleTypeDef * htim) {
+	HAL_StatusTypeDef status = HAL_OK;
 #if (MODULE_TYPE == MICROW_EMITTER)
-	streamInit(&sampleStream, &bitStream, hadc, huart);
+	status = streamInit(&sampleStream, &bitStream, hadc, huart);
+	if (status != HAL_OK) {
+		return status;
+	}
 
-	UARTTx_streamStart(&bitStream);
+	status = UARTTx_streamStart(&bitStream);
+	if (status != HAL_OK) {
+		return status;
+	}
 
-	encoder_streamStart(&sampleStream, &bitStream);
+	status = encoder_streamStart(&sampleStream, &bitStream);
+	if (status != HAL_OK) {
+		return status;
+	}
 
-	ADC_streamStart(&sampleStream);
+	status = ADC_streamStart(&sampleStream);
+	if (status != HAL_OK) {
+		return status;
+	}
 
-	Timer_Start(htim);
-
-	return HAL_OK;
-
+	status = Timer_Start(htim);
+	if (status != HAL_OK) {
+		return status;
+	}
 #else
-	return HAL_ERROR;
+	status = HAL_ERROR;
 #endif
+	return status;
 }
 
-void emitter_stop() {
+HAL_StatusTypeDef emitter_stop() {
+	HAL_StatusTypeDef status = HAL_OK;
 #if (MODULE_TYPE == MICROW_EMITTER)
-	ADC_streamStop();
+	status = ADC_streamStop();
+	if (status != HAL_OK) {
+		return status;
+	}
 
-	encoder_streamStop();
+	status = encoder_streamStop();
+	if (status != HAL_OK) {
+		return status;
+	}
 
-	UARTTx_streamStop();
+	status = UARTTx_streamStop();
+	if (status != HAL_OK) {
+		return status;
+	}
+#else
+	status = HAL_ERROR;
 #endif
+	return status;
 }
 
 HAL_StatusTypeDef receiver_start(UART_HandleTypeDef * huart, DAC_HandleTypeDef * hdac, uint32_t DAC_Channel, TIM_HandleTypeDef * htim) {
+	HAL_StatusTypeDef status = HAL_OK;
 #if (MODULE_TYPE == MICROW_RECEIVER)
-	streamInit(&sampleStream, &bitStream, hdac, DAC_Channel, huart);
+	status = streamInit(&sampleStream, &bitStream, hdac, DAC_Channel, huart);
+	if (status != HAL_OK) {
+		return status;
+	}
 
-	Timer_Start(htim);
+	status = Timer_Start(htim);
+	if (status != HAL_OK) {
+		return status;
+	}
 
-	DAC_streamStart(&sampleStream);
+	status = DAC_streamStart(&sampleStream);
+	if (status != HAL_OK) {
+		return status;
+	}
 
-	decoder_streamStart(&bitStream, &sampleStream);
+	status = decoder_streamStart(&bitStream, &sampleStream);
+	if (status != HAL_OK) {
+		return status;
+	}
 
-	UARTRx_streamStart(&bitStream);
-
-	return HAL_OK;
+	status = UARTRx_streamStart(&bitStream);
+	if (status != HAL_OK) {
+		return status;
+	}
 #else
-	return HAL_ERROR;
+	status = HAL_ERROR;
 #endif
+	return status;
 }
 
-void receiver_stop() {
+HAL_StatusTypeDef receiver_stop() {
+	HAL_StatusTypeDef status = HAL_OK;
 #if (MODULE_TYPE == MICROW_RECEIVER)
-	UARTRx_streamStop();
+	status = UARTRx_streamStop();
+	if (status != HAL_OK) {
+		return status;
+	}
 
-	decoder_streamStop();
+	status = decoder_streamStop();
+	if (status != HAL_OK) {
+		return status;
+	}
 
-	DAC_streamStop();
+	status = DAC_streamStop();
+	if (status != HAL_OK) {
+		return status;
+	}
+#else
+	status = HAL_ERROR;
 #endif
+	return status;
 }

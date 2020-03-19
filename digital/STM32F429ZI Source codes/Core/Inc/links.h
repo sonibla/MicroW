@@ -79,7 +79,7 @@ void UARTRx_FinishedHandle();
  * Non blocking function
  */
 HAL_StatusTypeDef emitter_start(UART_HandleTypeDef * huart, ADC_HandleTypeDef * hadc, TIM_HandleTypeDef * htim);
-void emitter_stop();
+HAL_StatusTypeDef emitter_stop();
 
 /*
  * receiver_start does everything necessary to automatically receive a serial stream and convert received values
@@ -87,7 +87,7 @@ void emitter_stop();
  * Non blocking function
  */
 HAL_StatusTypeDef receiver_start(UART_HandleTypeDef * huart, DAC_HandleTypeDef * hdac, uint32_t DAC_Channel, TIM_HandleTypeDef * htim);
-void receiver_stop();
+HAL_StatusTypeDef receiver_stop();
 
 /* Private defines -----------------------------------------------------------*/
 

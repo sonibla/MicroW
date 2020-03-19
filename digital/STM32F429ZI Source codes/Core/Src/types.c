@@ -47,7 +47,7 @@ HAL_StatusTypeDef streamInit(struct sampleStream_Info * sampleStream, struct bit
 		bitStream->length = RX_BUFFER_SIZE;
 	}
 
-	bitStream->lastBitOut = sizeof(uint8_t);
+	bitStream->lastBitOut = 8;
 
 	bitStream->lastByteIn = bitStream->length;
 	bitStream->lastByteOut = bitStream->length;
@@ -74,7 +74,7 @@ HAL_StatusTypeDef streamInit(struct sampleStream_Info * sampleStream, struct bit
 	sampleStream->defaultBitStream = bitStream;
 	sampleStream->bitsOut = 0;
 	sampleStream->lastSampleIn = sampleStream->length;
-	sampleStream->lastSampleOut = sampleStream->length;
+	sampleStream->lastSampleOut = sampleStream->length - 1;
 	sampleStream->state = INACTIVE;
 
 	sampleStream->stream = NULL;
