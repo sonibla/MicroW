@@ -34,7 +34,7 @@ extern "C" {
 /* Exported functions prototypes ---------------------------------------------*/
 
 /*
- * DAC_streamStart initializes a stream to continuously decode data
+ * DAC_streamStart initializes a stream to continuously output analog data
  */
 HAL_StatusTypeDef DAC_streamStart(struct sampleStream_Info * sampleStream);
 
