@@ -37,9 +37,9 @@ You'll have to download ```MicroW.bin``` file into your STM32F429ZI microcontrol
 
 ### Wiring
 
-On the *emitter* module, connect the analog input to ```PAO``` pin (ADC) and the Xbee to ```PA10``` pin (UART_TX).
+On the *emitter* module, connect the analog input to ```PAO``` pin (ADC) and the Xbee to ```PA9``` pin (UART_TX).
 
-On the *receiver* module, connect the analog output to ```PA4``` pin (DAC) and the Xbee to ```PA9``` pin (UART_RX).
+On the *receiver* module, connect the analog output to ```PA4``` pin (DAC) and the Xbee to ```PA10``` pin (UART_RX).
 
 ### Porting to another microcontroller
 
