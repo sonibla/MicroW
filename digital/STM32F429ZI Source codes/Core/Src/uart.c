@@ -86,7 +86,7 @@ HAL_StatusTypeDef UARTTx_streamStart(struct bitStream_Info * bitStream) {
 	return UARTTx_streamUpdate();
 }
 
-HAL_StatusTypeDef UARTTx_streamRetart() {
+HAL_StatusTypeDef UARTTx_streamRestart() {
 	UART_stream->state = ACTIVE;
 
 	return UARTTx_streamUpdate();
@@ -114,7 +114,7 @@ HAL_StatusTypeDef UARTRx_streamStart(struct bitStream_Info * bitStream) {
 	return HAL_UART_Receive_DMA(UART_stream->huart, &(UART_stream->byte), 1);
 }
 
-HAL_StatusTypeDef UARTRx_streamRetart() {
+HAL_StatusTypeDef UARTRx_streamRestart() {
 	UART_stream->state = BUSY;
 	return HAL_UART_Receive_DMA(UART_stream->huart, &(UART_stream->byte), 1);
 }
@@ -125,7 +125,7 @@ HAL_StatusTypeDef UARTRx_streamUpdate() {
 	uint8_t value = UART_stream->byte;
 
 	if (UART_stream->state != INACTIVE) {
-		status = UARTRx_streamRetart();
+		status = UARTRx_streamRestart();
 	}
 	else {
 		return HAL_ERROR;

@@ -85,7 +85,7 @@ HAL_StatusTypeDef encoder_streamStart(struct sampleStream_Info * sampleStream, s
 	return HAL_OK;
 }
 
-HAL_StatusTypeDef encoder_streamRetart(){
+HAL_StatusTypeDef encoder_streamRestart(){
 	ADC_stream->state = ACTIVE;
 	UART_stream->state = ACTIVE;
 

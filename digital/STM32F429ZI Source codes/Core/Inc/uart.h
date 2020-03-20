@@ -45,7 +45,7 @@ HAL_StatusTypeDef UARTTx_streamStart(struct bitStream_Info * bitStream);
 /*
  * UARTTx_streamRestart starts a stream without overwriting existing parameters.
  */
-HAL_StatusTypeDef UARTTx_streamRetart();
+HAL_StatusTypeDef UARTTx_streamRestart();
 
 /*
  * UARTTx_streamUpdate should be called when the UART buffer has been successfully updated
@@ -69,7 +69,7 @@ HAL_StatusTypeDef UARTRx_streamStart(struct bitStream_Info * bitStream);
 /*
  * UARTRx_streamRestart starts a stream without overwriting existing parameters.
  */
-HAL_StatusTypeDef UARTRx_streamRetart();
+HAL_StatusTypeDef UARTRx_streamRestart();
 
 /*
  * UARTRx_streamUpdate should be called at the end of data reception

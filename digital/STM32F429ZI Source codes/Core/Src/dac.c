@@ -45,7 +45,7 @@ HAL_StatusTypeDef DAC_streamStart(struct sampleStream_Info * sampleStream) {
 	return HAL_DAC_Start(DAC_stream->hdac, DAC_stream->DAC_Channel);
 }
 
-HAL_StatusTypeDef DAC_streamRetart() {
+HAL_StatusTypeDef DAC_streamRestart() {
 	return HAL_DAC_Start(DAC_stream->hdac, DAC_stream->DAC_Channel);
 }
 

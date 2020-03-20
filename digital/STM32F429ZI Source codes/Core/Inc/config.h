@@ -23,7 +23,7 @@
 #define MICROW_RECEIVER 1
 
 // Emitter / Receiver config
-#define MODULE_TYPE MICROW_RECEIVER
+#define MODULE_TYPE MICROW_EMITTER
 
 // UART config
 #define RX_BUFFER_SIZE 128
@@ -37,5 +37,16 @@
 #define WORD_LENGTH SAMPLE_SIZE
 #define SYNC_SIGNAL 0xFF
 #define SYNC_PERIOD 64
+
+// Error handling
+enum errorHandlingEnum
+{
+	NOTHING,
+	RESTART,
+	STOP,
+	INFINITE_LOOP
+};
+
+#define ERROR_HANDLING RESTART
 
 #endif /* INC_CONFIG_H_ */

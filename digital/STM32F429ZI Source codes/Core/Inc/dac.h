@@ -41,7 +41,7 @@ HAL_StatusTypeDef DAC_streamStart(struct sampleStream_Info * sampleStream);
 /*
  * DAC_streamRestart starts a stream without overwriting existing parameters.
  */
-HAL_StatusTypeDef DAC_streamRetart();
+HAL_StatusTypeDef DAC_streamRestart();
 
 /*
  * DAC_streamUpdate should be called at the end of new data saving

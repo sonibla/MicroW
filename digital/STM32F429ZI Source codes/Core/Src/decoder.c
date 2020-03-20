@@ -63,7 +63,7 @@ HAL_StatusTypeDef decoder_streamStart(struct bitStream_Info * bitStream, struct 
 	return HAL_OK;
 }
 
-HAL_StatusTypeDef decoder_streamRetart() {
+HAL_StatusTypeDef decoder_streamRestart() {
 	DAC_stream->state = ACTIVE;
 	UART_stream->state = ACTIVE;
 
@@ -71,12 +71,20 @@ HAL_StatusTypeDef decoder_streamRetart() {
 }
 
 HAL_StatusTypeDef decoder_streamUpdate() {
+	HAL_StatusTypeDef status = HAL_OK;
 	uint8_t bit = 0; // For for loop
 	uint8_t bitCursor = UART_stream->lastBitOut;
 	uint16_t byteCursor = UART_stream->lastByteOut;
 	uint64_t value = 0;
 
-	synchronize();
+	status = synchronize();
+	if (status == HAL_BUSY) {
+		// Waiting for sync signal (not an error)
+		return HAL_OK;
+	}
+	if (status != HAL_OK) {
+		return status;
+	}
 
 	if (dataAvailable() == 0) {
 		// No new data

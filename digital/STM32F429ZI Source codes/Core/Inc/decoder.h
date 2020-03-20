@@ -41,7 +41,7 @@ HAL_StatusTypeDef decoder_streamStart(struct bitStream_Info * bitStream, struct 
 /*
  * decoder_streamRestart starts a stream without overwriting existing parameters.
  */
-HAL_StatusTypeDef decoder_streamRetart();
+HAL_StatusTypeDef decoder_streamRestart();
 
 /*
  * decoder_streamUpdate should be called at the end of new data saving

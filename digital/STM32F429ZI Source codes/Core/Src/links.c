@@ -32,6 +32,17 @@
 /* Private macros ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 
+struct peripherals_Info
+{
+	UART_HandleTypeDef * huart;
+	DAC_HandleTypeDef * hdac;
+	ADC_HandleTypeDef * hadc;
+	TIM_HandleTypeDef * htim;
+	uint32_t DAC_Channel;
+};
+
+struct peripherals_Info peripherals;
+
 struct sampleStream_Info sampleStream;
 struct bitStream_Info bitStream;
 
@@ -42,67 +53,17 @@ struct bitStream_Info bitStream;
  */
 static void Error_Handler(void);
 
+/*
+ * receiver_restart starts the receiver without changing the parameters
+ */
+static HAL_StatusTypeDef receiver_restart();
+
+/*
+ * emitter_restart starts the receiver without changing the parameters
+ */
+static HAL_StatusTypeDef emitter_restart();
+
 /* Exported functions --------------------------------------------------------*/
-
-
-/*=============================================================================
-                  ##### HAL Callback functions #####
-=============================================================================*/
-
-// ADC
-
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef * hadc) {
-	ADC_streamUpdate();
-}
-
-void HAL_ADC_ErrorCallback(ADC_HandleTypeDef * hadc) {
-	Error_Handler();
-}
-
-// UART
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef * huart) {
-	UARTRx_streamUpdate();
-}
-
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef * huart) {
-	UARTTx_streamRetart();
-}
-
-void HAL_UART_ErrorCallback(UART_HandleTypeDef * huart) {
-	Error_Handler();
-}
-
-/*=============================================================================
-                      ##### "Handle" functions #####
-=============================================================================*/
-
-static void Error_Handler(void) {
-
-}
-
-void Timer_RisingEdgeHandle() {
-	if (sampleStream.state == ACTIVE) {
-		if (MODULE_TYPE == MICROW_EMITTER) {
-			ADC_streamRestart();
-		}
-		else {
-			DAC_streamUpdate();
-		}
-	}
-}
-
-void ADC_FinishedHandle() {
-	encoder_streamUpdate();
-}
-
-void encode_FinishedHandle() {
-	UARTTx_streamUpdate();
-}
-
-void UARTRx_FinishedHandle() {
-	decoder_streamUpdate();
-}
 
 /*=============================================================================
                     ##### Main API functions #####
@@ -111,6 +72,10 @@ void UARTRx_FinishedHandle() {
 HAL_StatusTypeDef emitter_start(UART_HandleTypeDef * huart, ADC_HandleTypeDef * hadc, TIM_HandleTypeDef * htim) {
 	HAL_StatusTypeDef status = HAL_OK;
 #if (MODULE_TYPE == MICROW_EMITTER)
+	peripherals.huart = huart;
+	peripherals.hadc = hadc;
+	peripherals.htim = htim;
+
 	status = streamInit(&sampleStream, &bitStream, hadc, huart);
 	if (status != HAL_OK) {
 		return status;
@@ -167,6 +132,11 @@ HAL_StatusTypeDef emitter_stop() {
 HAL_StatusTypeDef receiver_start(UART_HandleTypeDef * huart, DAC_HandleTypeDef * hdac, uint32_t DAC_Channel, TIM_HandleTypeDef * htim) {
 	HAL_StatusTypeDef status = HAL_OK;
 #if (MODULE_TYPE == MICROW_RECEIVER)
+	peripherals.huart = huart;
+	peripherals.hdac = hdac;
+	peripherals.DAC_Channel = DAC_Channel;
+	peripherals.htim = htim;
+
 	status = streamInit(&sampleStream, &bitStream, hdac, DAC_Channel, huart);
 	if (status != HAL_OK) {
 		return status;
@@ -218,4 +188,169 @@ HAL_StatusTypeDef receiver_stop() {
 	status = HAL_ERROR;
 #endif
 	return status;
+}
+
+
+/*=============================================================================
+                  ##### Restart functions #####
+=============================================================================*/
+
+static HAL_StatusTypeDef emitter_restart() {
+	HAL_StatusTypeDef status = HAL_OK;
+#if (MODULE_TYPE == MICROW_EMITTER)
+
+	status = streamInit(&sampleStream, &bitStream, peripherals.hadc, peripherals.huart);
+	if (status != HAL_OK) {
+		return status;
+	}
+
+	status = emitter_start(peripherals.huart, peripherals.hadc, peripherals.htim);
+#else
+	status = HAL_ERROR;
+#endif
+	return status;
+}
+
+static HAL_StatusTypeDef receiver_restart() {
+	HAL_StatusTypeDef status = HAL_OK;
+#if (MODULE_TYPE == MICROW_RECEIVER)
+
+	status = streamInit(&sampleStream, &bitStream, peripherals.hdac, peripherals.DAC_Channel, peripherals.huart);
+	if (status != HAL_OK) {
+		return status;
+	}
+
+	status = receiver_start(peripherals.huart, peripherals.hdac, peripherals.DAC_Channel, peripherals.htim);
+#else
+	status = HAL_ERROR;
+#endif
+	return status;
+}
+
+/*=============================================================================
+                  ##### HAL Callback functions #####
+=============================================================================*/
+
+// ADC
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef * hadc) {
+	HAL_StatusTypeDef status = HAL_OK;
+
+	status = ADC_streamUpdate();
+
+	if (status != HAL_OK) {
+		Error_Handler();
+	}
+}
+
+void HAL_ADC_ErrorCallback(ADC_HandleTypeDef * hadc) {
+	Error_Handler();
+}
+
+// UART
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef * huart) {
+	HAL_StatusTypeDef status = HAL_OK;
+
+	status = UARTRx_streamUpdate();
+
+	if (status != HAL_OK) {
+		Error_Handler();
+	}
+}
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef * huart) {
+	HAL_StatusTypeDef status = HAL_OK;
+
+	status = UARTTx_streamRestart();
+
+	if (status != HAL_OK) {
+		Error_Handler();
+	}
+}
+
+void HAL_UART_ErrorCallback(UART_HandleTypeDef * huart) {
+	Error_Handler();
+}
+
+/*=============================================================================
+                      ##### "Handle" functions #####
+=============================================================================*/
+
+static void Error_Handler() {
+	HAL_StatusTypeDef status = HAL_OK;
+
+	if (ERROR_HANDLING == STOP || ERROR_HANDLING == RESTART) {
+		receiver_stop();
+		emitter_stop();
+	}
+
+	if (ERROR_HANDLING == RESTART) {
+		if (MODULE_TYPE == MICROW_RECEIVER) {
+			status = receiver_restart();
+		}
+		else {
+			status = emitter_restart();
+		}
+		if (status != HAL_OK) {
+			/*
+			 * Oh no ! Error_Handler has encountered an error !
+			 * No problem, let's call Error_Handler for help
+			 */
+			Error_Handler();
+		}
+	}
+
+	if (ERROR_HANDLING == INFINITE_LOOP) {
+		while (1) {
+
+		}
+	}
+}
+
+void Timer_RisingEdgeHandle() {
+	HAL_StatusTypeDef status = HAL_OK;
+
+	if (sampleStream.state == ACTIVE) {
+		if (MODULE_TYPE == MICROW_EMITTER) {
+			status = ADC_streamRestart();
+		}
+		else {
+			status = DAC_streamUpdate();
+		}
+	}
+
+	if (status != HAL_OK) {
+		Error_Handler();
+	}
+}
+
+void ADC_FinishedHandle() {
+	HAL_StatusTypeDef status = HAL_OK;
+
+	encoder_streamUpdate();
+
+	if (status != HAL_OK) {
+		Error_Handler();
+	}
+}
+
+void encode_FinishedHandle() {
+	HAL_StatusTypeDef status = HAL_OK;
+
+	status = UARTTx_streamUpdate();
+
+	if (status != HAL_OK) {
+		Error_Handler();
+	}
+}
+
+void UARTRx_FinishedHandle() {
+	HAL_StatusTypeDef status = HAL_OK;
+
+	status = decoder_streamUpdate();
+
+	if (status != HAL_OK) {
+		Error_Handler();
+	}
 }

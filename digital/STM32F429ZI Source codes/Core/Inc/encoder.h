@@ -41,7 +41,7 @@ HAL_StatusTypeDef encoder_streamStart(struct sampleStream_Info * sampleStream, s
 /*
  * encoder_streamRestart starts a stream without overwriting existing parameters.
  */
-HAL_StatusTypeDef encoder_streamRetart();
+HAL_StatusTypeDef encoder_streamRestart();
 
 /*
  * encoder_streamUpdate should be called at the end of a ADC buffer update to update the UART buffer
