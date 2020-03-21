@@ -18,6 +18,7 @@
   * [Timer (timer.h)](#timer-timerh)
   * [USART (uart.h)](#usart-uarth)
 - [Detailed explanations](#detailed-explanations)
+  * [Clocks](#clocks)
   * [ADC](#adc)
   * [DAC](#dac)
   * [Timers](#timers)
@@ -589,6 +590,10 @@ UARTRx_streamStop stops a running stream.
 - **HAL**: status
 
 ## Detailed explanations
+
+In this section, I'll explain in detail how MicroW microcontrollers are configured. For details on how STM32F429ZI and its peripherals work, please refer to [STM32F429ZI Reference Manual](https://www.st.com/resource/en/reference_manual/dm00031020.pdf).
+
+### Clocks
 
 ### ADC
 
