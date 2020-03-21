@@ -597,7 +597,70 @@ In this section, I'll explain in detail how MicroW microcontrollers are configur
 
 ### ADC
 
+Like most modern VoIP communication products, MicroW samples at 16MHz. 
+This frequency is controlled by a timer, the duration of an ADC conversion is is negligible compared to the sampling period. 
+
+A sampling rate of 16MHz is enough to record voice because barely no one speaks above 8MHz. 
+However, MicroW won't be able to record good quality music, because humans can hear sound up to 20MHz.
+MicroW only need one ADC peripheral to sample voice because it uses mono sound.
+
+To control the sampling frequency, at every rising edge of the timer ```HAL_ADC_Start_IT()``` is called, which will start a regular conversion and generate a callback when it's finished.
+
+In order to ensure a good sound quality, the bit depth is set by default to **12 bit per sample** (the more is the best).
+```
+hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+```
+
+As conversions are controlled one-by-one by a timer, we only need regular conversions.
+```
+hadc1.Init.ScanConvMode = DISABLE;
+hadc1.Init.ContinuousConvMode = DISABLE;
+hadc1.Init.DiscontinuousConvMode = DISABLE;
+hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+hadc1.Init.NbrOfConversion = 1;
+```
+
+At this state of the project, the CPU isn't overloaded by many signal processing stuff, so we don't need DMA
+```
+hadc1.Init.DMAContinuousRequests = DISABLE;
+```
+
+Right alignment is easier to handle
+```
+hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+```
+
+End Of Conversion flag (EOC) setting isn't important since we request conversions one-by-one.
+```
+hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+```
+
+Changing the channel will only change which pin on the microcontroller is used. Rank setting isn't important because we only use one channel.
+```
+sConfig.Channel = ADC_CHANNEL_0;
+sConfig.Rank = 1;
+```
+
+This clock prescaler allows the fastest conversion supported by the ADC (knowing clocks configuration). You may change sampling time to increase reliability, but it should stay negligible compared to the sampling period.
+```
+sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
+hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+```
+
 ### DAC
+
+The refresh rate of the DAC is controlled by a timer, and should be equal to the sampling time of the ADC (16MHz by default).
+The latency introduced by the conversion is negligible compared to the transmission of the radio signal.
+
+To control the refresh frequency, at every rising edge of the timer, ```HAL_DAC_SetValue()``` is called.
+
+DAC output buffer is a feature that reduces the output impedance, so that we don't need an external operational amplifier connected right after the DAC.
+```
+sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
+```
+
+STM32F4's DAC has a bit depth of 12 bit per sample.
 
 ### Timers
 
