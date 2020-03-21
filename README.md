@@ -24,7 +24,7 @@ Details about electrical circuits will be in [analog](analog) folder. Embedded C
 
 ## Current project state
 
-Currently, only embedded C codes are available.
+Currently, only [embedded C codes](https://github.com/sonibla/MicroW/tree/master/digital/STM32F429ZI%20Source%20codes) are available.
 Analog circuits, test tools and methods and more documentation soon available
 
 ## License
