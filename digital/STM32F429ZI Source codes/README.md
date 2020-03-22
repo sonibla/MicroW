@@ -26,6 +26,7 @@
   * [USART](#usart)
   * [DMA](#dma)
   * [Encoding and decoding data](#encoding-and-decoding-data)
+  * [Summary](#summary)
 - [License](#license)
 
 ## Overview
@@ -778,6 +779,12 @@ If a encoded byte is unintentionnaly the synchronization signal (0xFF by default
 It may causes an error up to 0.4% on the analog value, as shown in the formula below : the worst case is when the first and the fifth bits of the 12-bit analog value are changed.
 
 <img src="https://latex.codecogs.com/gif.latex?\frac{2^4&plus;2^0}{2^{12}}&space;\simeq&space;0.004" title="\frac{2^4+2^0}{2^{12}} \simeq 0.004" />
+
+### Summary
+
+Here is a summary of what happen inside of MicroW microcontrollers
+
+![microcontrollers details](../../images/Microcontrollers_more_details.png "Microcontrollers details")
 
 ## License
 
