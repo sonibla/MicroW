@@ -701,9 +701,60 @@ sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
 
 ### NVIC
 
+NVIC is the component that manages interrupts. For example, on every riging edge of the timer, an interrupt is generated (a function is called, pausing previous code execution).
+
+Actually, most of the time, MicroW CPU is in an infinite loop (in [main.c](Core/Src/main.c)). But when something happen, an interrupt is generated and handled by MicroW or HAL API.
+
+Most NVIC configuration is automatic thanks to HAL, but we still need to configure DMA interrupts :
+```
+HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 0, 0);
+HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
+
+HAL_NVIC_SetPriority(DMA2_Stream7_IRQn, 0, 0);
+HAL_NVIC_EnableIRQ(DMA2_Stream7_IRQn);
+```
+
 ### USART
 
+MicroW send and receives bytes one-by-one to be more efficient.
+
+On the receiver module, everytime a byte is reveived it is immediately stored and analyzed, while UART continues receiving data.
+On the emitter module, as soon as a byte has been encoded it is send.
+
+MicroW needs at least a 192kb/s USART interface, but the first standard value greater than 192000 baud is 230400 baud.
+```
+huart1.Init.BaudRate = 230400;
+```
+
+STM32's UART needs to have the same configuration as in the Xbee module, by default we set everything to 230400 8N1. The connection between the microcontroller and the Xbee is a small wire so the probability of error is low, that's why we don't use any parity bit.
+```
+huart1.Init.WordLength = UART_WORDLENGTH_8B;
+huart1.Init.StopBits = UART_STOPBITS_1;
+huart1.Init.Parity = UART_PARITY_NONE;
+```
+
+As UART initialization is the same for the emitter and the receiver, so the peripheral needs to be able to send and receive data.
+```
+huart1.Init.Mode = UART_MODE_TX_RX;
+```
+
+We don't need hardware flow control because every Xbee module only send or transmit data, never both at the same time.
+```
+huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+```
+
+Oversampling increases reliability
+```
+huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+```
+
 ### DMA
+
+In order to increase UART reliability, we use DMA. Basically, DMA allows UART module to send or receive data without using the CPU.
+
+It's also possible to use DMA with ADC or DAC, but at this time of the project it's not necessary.
+
+DMA streams are configured using NVIC interrupts.
 
 ### Encoding and decoding data
 
