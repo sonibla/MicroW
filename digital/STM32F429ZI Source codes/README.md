@@ -771,7 +771,11 @@ When the decoder receives a synchronization byte, it knows that the next bit it 
 
 Once the decoder is synchronized, it just have to count incoming bits and comparing that value to ADC's bit depth (12 bit)
 
-If a encoded byte is unintentionnaly the synchronization signal (0xFF by default), the encoder toggles its least significant bit. It may causes an error up to 0.4% on the analog value, as shown in the formula below: the worst case is when the first and the fifth bits of the 12-bit analog value are changed).
+If a encoded byte is unintentionnaly the synchronization signal (0xFF by default), the encoder toggles its least significant bit, as shown on the diagram below (worst case).
+
+![serial timing worst case](../../images/Serial_line_timing_worst_case.png "MicroW serial communication : worst case")
+
+It may causes an error up to 0.4% on the analog value, as shown in the formula below : the worst case is when the first and the fifth bits of the 12-bit analog value are changed.
 
 <img src="https://latex.codecogs.com/gif.latex?\frac{2^4&plus;2^0}{2^{12}}&space;\simeq&space;0.004" title="\frac{2^4+2^0}{2^{12}} \simeq 0.004" />
 
