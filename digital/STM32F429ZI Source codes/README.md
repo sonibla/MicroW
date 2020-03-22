@@ -599,11 +599,11 @@ Code extracts for peripherals configuration come from [main.c](Core/Src/main.c).
 
 ### ADC
 
-Like most modern VoIP communication products, MicroW samples at 16MHz. 
+Like most modern VoIP communication products, MicroW samples at 16kHz. 
 This frequency is controlled by a timer, the duration of an ADC conversion is is negligible compared to the sampling period. 
 
-A sampling rate of 16MHz is enough to record voice because barely no one speaks above 8MHz. 
-However, MicroW won't be able to record good quality music, because humans can hear sound up to 20MHz.
+A sampling rate of 16MHz is enough to record voice because barely no one speaks above 8kHz. 
+However, MicroW won't be able to record good quality music, because humans can hear sound up to 20kHz.
 MicroW only need one ADC peripheral to sample voice because it uses mono sound.
 
 To control the sampling frequency, at every rising edge of the timer ```HAL_ADC_Start_IT()``` is called, which will start a regular conversion and generate a callback when it's finished.
@@ -665,6 +665,37 @@ sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
 STM32F4's DAC has a bit depth of 12 bit per sample.
 
 ### Timers
+
+We use TIM2 timer to set the sampling frequency (16kHz)
+
+Let's use internal clock (90MHz) :
+```
+sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+```
+
+Here is the formula that explain how to contigure timer's parameters :
+
+<a href="https://www.codecogs.com/eqnedit.php?latex=T_{Timer}&space;=&space;T_{Clock}&space;\times&space;(Prescaler&space;&plus;&space;1)&space;\times&space;(AutoreloadPeriod&space;&plus;&space;1)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?T_{Timer}&space;=&space;T_{Clock}&space;\times&space;(Prescaler&space;&plus;&space;1)&space;\times&space;(AutoreloadPeriod&space;&plus;&space;1)" title="T_{Timer} = T_{Clock} \times (Prescaler + 1) \times (AutoreloadPeriod + 1)" /></a>
+
+<a href="https://www.codecogs.com/eqnedit.php?latex=\frac{F_{Timer}}{F_{Clock}}&space;=&space;\frac{1}{(Prescaler&space;&plus;&space;1)&space;\times&space;(AutoreloadPeriod&space;&plus;&space;1)}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\frac{F_{Timer}}{F_{Clock}}&space;=&space;\frac{1}{(Prescaler&space;&plus;&space;1)&space;\times&space;(AutoreloadPeriod&space;&plus;&space;1)}" title="\frac{F_{Timer}}{F_{Clock}} = \frac{1}{(Prescaler + 1) \times (AutoreloadPeriod + 1)}" /></a>
+
+Knowing timer and clock frequencies (16kHz and 90MHz), we can set the autoreload period to 5624 and the clock prescaler to 0. It's good to keep a small prescaler to reduce errors.
+```
+htim2.Init.Prescaler = 0;
+htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+htim2.Init.Period = 5624;
+```
+
+We want an output trigger when the timer has finished counting from 0 to 5624 :
+```
+sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+```
+
+No need to use slave mode.
+```
+sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+```
 
 ### NVIC
 
