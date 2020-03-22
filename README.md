@@ -8,6 +8,12 @@ MicroW is a *wireless* device that transmits the coxswain's voice in a rowing bo
   <img src="https://github.com/sonibla/MicroW/blob/master/images/logo_small.png" alt="MicroW logo" height="90"/>
 </p>
 
+<p align="center">
+    <a href="http://creativecommons.org/licenses/by/4.0/"><img src="https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg" alt="License: CC BY 4.0"/></a>
+    <a href="https://opensource.org/licenses/BSD-3-Clause"><img src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" alt="License: BSD-3-Clause"/></a>
+    <img src="https://badges.frapsoft.com/os/v1/open-source.png?v=103" alt="Open Source"/>
+</p>
+
 ## Overview
 
 MicroW consists of several waterproof devices placed inside a rowing boat. The coxswain has an emitter module, and one or several receiver modules are in the boat. Instead of wires, MicroW uses worldwide approved 2.4 GHz radio signal.
@@ -31,6 +37,9 @@ Analog circuits, test tools and methods and more documentation soon available
 
 The content of this project itself is licensed under the [Creative Commons Attribution 4.0 International license](https://creativecommons.org/licenses/by/4.0/), and the underlying source code used to format 
 and display that content is licensed under the [3-Clause BSD License](https://opensource.org/licenses/BSD-3-Clause).
+
+<a href="http://creativecommons.org/licenses/by/4.0/"><img src="https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg" alt="License: CC BY 4.0"/></a>
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 ## Contributors
 
