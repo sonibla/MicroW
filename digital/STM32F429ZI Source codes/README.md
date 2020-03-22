@@ -678,9 +678,9 @@ htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 
 Here is the formula that explain how to contigure timer's parameters :
 
-<a href="https://www.codecogs.com/eqnedit.php?latex=T_{Timer}&space;=&space;T_{Clock}&space;\times&space;(Prescaler&space;&plus;&space;1)&space;\times&space;(AutoreloadPeriod&space;&plus;&space;1)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?T_{Timer}&space;=&space;T_{Clock}&space;\times&space;(Prescaler&space;&plus;&space;1)&space;\times&space;(AutoreloadPeriod&space;&plus;&space;1)" title="T_{Timer} = T_{Clock} \times (Prescaler + 1) \times (AutoreloadPeriod + 1)" /></a>
+<img src="https://latex.codecogs.com/gif.latex?T_{Timer}&space;=&space;T_{Clock}&space;\times&space;(Prescaler&space;&plus;&space;1)&space;\times&space;(AutoreloadPeriod&space;&plus;&space;1)" title="T_{Timer} = T_{Clock} \times (Prescaler + 1) \times (AutoreloadPeriod + 1)" />
 
-<a href="https://www.codecogs.com/eqnedit.php?latex=\frac{F_{Timer}}{F_{Clock}}&space;=&space;\frac{1}{(Prescaler&space;&plus;&space;1)&space;\times&space;(AutoreloadPeriod&space;&plus;&space;1)}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\frac{F_{Timer}}{F_{Clock}}&space;=&space;\frac{1}{(Prescaler&space;&plus;&space;1)&space;\times&space;(AutoreloadPeriod&space;&plus;&space;1)}" title="\frac{F_{Timer}}{F_{Clock}} = \frac{1}{(Prescaler + 1) \times (AutoreloadPeriod + 1)}" /></a>
+<img src="https://latex.codecogs.com/gif.latex?\frac{F_{Timer}}{F_{Clock}}&space;=&space;\frac{1}{(Prescaler&space;&plus;&space;1)&space;\times&space;(AutoreloadPeriod&space;&plus;&space;1)}" title="\frac{F_{Timer}}{F_{Clock}} = \frac{1}{(Prescaler + 1) \times (AutoreloadPeriod + 1)}" />
 
 Knowing timer and clock frequencies (16kHz and 90MHz), we can set the autoreload period to 5624 and the clock prescaler to 0. It's good to keep a small prescaler to reduce errors.
 ```
@@ -716,7 +716,9 @@ When the decoder receives a synchronization byte, it knows that the next bit it 
 
 Once the decoder is synchronized, it just have to count incoming bits and comparing that value to ADC's bit depth (12 bit)
 
-If a encoded byte is unintentionnaly the synchronization signal (0xFF by default), the encoder toggles its least significant bit. It may causes an error up to 0.7% on the analog value. 
+If a encoded byte is unintentionnaly the synchronization signal (0xFF by default), the encoder toggles its least significant bit. It may causes an error up to 0.4% on the analog value, as shown in the formula below: the worst case is when the first and the fifth bits of the 12-bit analog value are changed).
+
+<img src="https://latex.codecogs.com/gif.latex?\frac{2^4&plus;2^0}{2^{12}}&space;\simeq&space;0.004" title="\frac{2^4+2^0}{2^{12}} \simeq 0.004" />
 
 ## License
 
