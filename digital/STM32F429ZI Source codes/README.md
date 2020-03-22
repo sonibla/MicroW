@@ -707,6 +707,17 @@ sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
 
 ### Encoding and decoding data
 
+Knowing that we sample 12-bit analog values at 16kHz (192kb/s), and Xbee modules can reach 250kb/s, we don't need data compression. 
+We have chosen to send the samples one directly after another in the serial line.
+
+But this method can only work if the decoder knows exactly on which bit a sample starts (the decoder has to be synchronized).
+To do that, the encoder periodically sends a *synchronization signal* of one byte (0xFF every 64 bytes by default).
+When the decoder receives a synchronization byte, it knows that the next bit it receives will be a sample's most significant bit.
+
+Once the decoder is synchronized, it just have to count incoming bits and comparing that value to ADC's bit depth (12 bit)
+
+If a encoded byte is unintentionnaly the synchronization signal (0xFF by default), the encoder toggles its least significant bit. It may causes an error up to 0.007% on the analog value. 
+
 ## License
 
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
