@@ -708,7 +708,9 @@ sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
 ### Encoding and decoding data
 
 Knowing that we sample 12-bit analog values at 16kHz (192kb/s), and Xbee modules can reach 250kb/s, we don't need data compression. 
-We have chosen to send the samples one directly after another in the serial line.
+We have chosen to send the samples one directly after another in the serial line, as shown on the diagram below.
+
+![serial timing](../../images/Serial_line_timing.png "MicroW serial communication")
 
 But this method can only work if the decoder knows exactly on which bit a sample starts (the decoder has to be synchronized).
 To do that, the encoder periodically sends a *synchronization signal* of one byte (0xFF every 64 bytes by default).
