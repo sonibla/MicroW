@@ -593,6 +593,8 @@ UARTRx_streamStop stops a running stream.
 
 In this section, I'll explain in detail how MicroW microcontrollers are configured. For details on how STM32F429ZI and its peripherals work, please refer to [STM32F429ZI Reference Manual](https://www.st.com/resource/en/reference_manual/dm00031020.pdf).
 
+The way MicroW encode and decode data is explained in [Encoding and decoding data](#encoding-and-decoding-data) sub-section.
+
 Code extracts for peripherals configuration come from [main.c](Core/Src/main.c).
 
 ### Clocks
