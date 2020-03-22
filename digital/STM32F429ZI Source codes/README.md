@@ -703,6 +703,8 @@ sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
 
 NVIC is the component that manages interrupts. For example, on every riging edge of the timer, an interrupt is generated (a function is called, pausing previous code execution).
 
+Interrupts handles are in [stm32f4xx_it.c](Core/Src/stm32f4xx_it.c) file.
+
 Actually, most of the time, MicroW CPU is in an infinite loop (in [main.c](Core/Src/main.c)). But when something happen, an interrupt is generated and handled by MicroW or HAL API.
 
 Most NVIC configuration is automatic thanks to HAL, but we still need to configure DMA interrupts :
