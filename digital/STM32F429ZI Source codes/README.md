@@ -716,7 +716,7 @@ When the decoder receives a synchronization byte, it knows that the next bit it 
 
 Once the decoder is synchronized, it just have to count incoming bits and comparing that value to ADC's bit depth (12 bit)
 
-If a encoded byte is unintentionnaly the synchronization signal (0xFF by default), the encoder toggles its least significant bit. It may causes an error up to 0.007% on the analog value. 
+If a encoded byte is unintentionnaly the synchronization signal (0xFF by default), the encoder toggles its least significant bit. It may causes an error up to 0.7% on the analog value. 
 
 ## License
 
