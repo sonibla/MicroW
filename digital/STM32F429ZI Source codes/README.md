@@ -600,6 +600,41 @@ Code extracts for peripherals configuration come from [main.c](Core/Src/main.c).
 
 ### Clocks
 
+MicroW uses an internal clock of 16MHz (geenrated by a quartz oscillator).
+```
+RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+```
+
+System clock (SYSCLK) is set to 180MHz thanks to the main PLL. A too low setting may cause overrun errors, for example in UART reception.
+```
+RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+RCC_OscInitStruct.PLL.PLLM = 8;
+RCC_OscInitStruct.PLL.PLLN = 180;
+RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+RCC_OscInitStruct.PLL.PLLQ = 4;
+RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+```
+
+Following settings allow every peripheral to work at fullspeed. In a future version we will reduce clock frequencies to the minimum necessary to save energy.
+```
+RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+```
+
+Here is a summary of different clocks :
+
+|Clock|Frequency (MHz)|
+|--|--|
+|HSI|16|
+|SYSCLK, HCLK, PLLCLK|180|
+|PCLK1|45|
+|PCLK2|90|
+
+
 ### ADC
 
 Like most modern VoIP communication products, MicroW samples at 16kHz. 
@@ -669,7 +704,7 @@ STM32F4's DAC has a bit depth of 12 bit per sample.
 
 ### Timers
 
-We use TIM2 timer to set the sampling frequency (16kHz)
+We use TIM2 timer to set the sampling frequency (**16kHz**)
 
 Let's use internal clock (90MHz) :
 ```
@@ -683,7 +718,7 @@ Here is the formula that explain how to contigure timer's parameters :
 
 <img src="https://latex.codecogs.com/gif.latex?\frac{F_{Timer}}{F_{Clock}}&space;=&space;\frac{1}{(Prescaler&space;&plus;&space;1)&space;\times&space;(AutoreloadPeriod&space;&plus;&space;1)}" title="\frac{F_{Timer}}{F_{Clock}} = \frac{1}{(Prescaler + 1) \times (AutoreloadPeriod + 1)}" />
 
-Knowing timer and clock frequencies (16kHz and 90MHz), we can set the autoreload period to 5624 and the clock prescaler to 0. It's good to keep a small prescaler to reduce errors.
+Knowing timer and clock frequencies (16kHz and 90MHz), we can set the autoreload period to **5624** and the clock prescaler to 0. It's good to keep a small prescaler to reduce errors.
 ```
 htim2.Init.Prescaler = 0;
 htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
@@ -729,7 +764,7 @@ MicroW needs at least a 192kb/s USART interface, but the first standard value gr
 huart1.Init.BaudRate = 230400;
 ```
 
-STM32's UART needs to have the same configuration as in the Xbee module, by default we set everything to 230400 8N1. The connection between the microcontroller and the Xbee is a small wire so the probability of error is low, that's why we don't use any parity bit.
+STM32's UART needs to have the same configuration as in the Xbee module, by default we set everything to **230400 8N1**. The connection between the microcontroller and the Xbee is a small wire so the probability of error is low, that's why we don't use any parity bit.
 ```
 huart1.Init.WordLength = UART_WORDLENGTH_8B;
 huart1.Init.StopBits = UART_STOPBITS_1;
