@@ -46,7 +46,7 @@ and display that content is licensed under the [3-Clause BSD License](https://op
 
 Current maintainers:
 
-* **Matthieu Planas**
+* [**Matthieu Planas**](https://github.com/MattPlan)
 * [**Alban Benmouffek**](https://github.com/sonibla)
 
 People who previously worked on this project:
