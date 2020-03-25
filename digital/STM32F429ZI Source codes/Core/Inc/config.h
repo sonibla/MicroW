@@ -23,7 +23,7 @@
 #define MICROW_RECEIVER 1
 
 // Emitter / Receiver config
-#define MODULE_TYPE MICROW_EMITTER
+#define MODULE_TYPE MICROW_RECEIVER
 
 // UART config
 #define RX_BUFFER_SIZE 128
@@ -47,6 +47,6 @@ enum errorHandlingEnum
 	INFINITE_LOOP
 };
 
-#define ERROR_HANDLING RESTART
+#define ERROR_HANDLING NOTHING
 
 #endif /* INC_CONFIG_H_ */

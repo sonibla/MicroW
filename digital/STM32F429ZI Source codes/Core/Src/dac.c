@@ -28,8 +28,15 @@
 /* Private variables ---------------------------------------------------------*/
 
 struct sampleStream_Info * DAC_stream;
+uint16_t maskSample;
+uint16_t fakevalue;
 
 /* Private function prototypes -----------------------------------------------*/
+
+/*
+ * mask creates a number in which n LSBs are ones
+ */
+static uint64_t mask(uint8_t bits);
 
 /*
  * sampleAvailable checks if a new sample is available
@@ -42,6 +49,8 @@ HAL_StatusTypeDef DAC_streamStart(struct sampleStream_Info * sampleStream) {
 	DAC_stream = sampleStream;
 	DAC_stream->state = ACTIVE;
 
+	maskSample = mask(SAMPLE_SIZE);
+	fakevalue = 0;
 	return HAL_DAC_Start(DAC_stream->hdac, DAC_stream->DAC_Channel);
 }
 
@@ -58,6 +67,10 @@ HAL_StatusTypeDef DAC_streamUpdate() {
 			DAC_stream->lastSampleOut = 0;
 		}
 		value = (DAC_stream->stream)[DAC_stream->lastSampleOut];
+
+		if ((value & maskSample) != value) {
+			return HAL_ERROR;
+		}
 
 		return HAL_DAC_SetValue(DAC_stream->hdac, DAC_stream->DAC_Channel, DAC_ALIGN_12B_R, (uint32_t)value);
 	}
@@ -85,5 +98,17 @@ HAL_StatusTypeDef DAC_streamStop() {
 	DAC_stream->state = INACTIVE;
 
 	return HAL_DAC_Stop(DAC_stream->hdac, DAC_stream->DAC_Channel);
+}
+
+static uint64_t mask(uint8_t bits) {
+	uint8_t bit;
+	uint64_t mask_var = 0;
+
+	for (bit = 0; bit < bits; bit++) {
+		mask_var <<= 1;
+		mask_var += 1;
+	}
+
+	return mask_var;
 }
 

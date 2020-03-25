@@ -120,7 +120,7 @@ static HAL_StatusTypeDef synchronize() {
 	}
 
 	if (UART_stream->synchronized == 0) {
-		return HAL_ERROR;
+		return HAL_BUSY;
 	}
 	else {
 		return HAL_OK;

@@ -74,13 +74,18 @@ HAL_StatusTypeDef streamInit(struct sampleStream_Info * sampleStream, struct bit
 	sampleStream->defaultBitStream = bitStream;
 	sampleStream->bitsOut = 0;
 	sampleStream->lastSampleIn = sampleStream->length;
-	sampleStream->lastSampleOut = sampleStream->length - 1;
+	sampleStream->lastSampleOut = sampleStream->length;
 	sampleStream->state = INACTIVE;
 
 	sampleStream->stream = NULL;
     sampleStream->stream = malloc(sampleStream->length * sizeof(uint32_t));
     if (sampleStream->stream == NULL) {
         return HAL_ERROR;
+    }
+
+    uint16_t i = 0;
+    for(i=0; i<sampleStream->length; i++) {
+    	(sampleStream->stream)[i] = 0xFFFFFFFF;
     }
 
     return HAL_OK;

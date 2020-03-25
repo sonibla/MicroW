@@ -142,7 +142,7 @@ Possible values:
  - `STOP`
  - `INFINITE_LOOP`
 
-Default value : `RESTART`
+Default value : `NOTHING`
 
 ### Main API (links.h)
 
