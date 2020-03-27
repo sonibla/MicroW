@@ -72,6 +72,7 @@ HAL_StatusTypeDef UARTTx_streamUpdate() {
 		}
 
 		UART_stream->byte = (UART_stream->stream)[UART_stream->lastByteOut];
+
 		return HAL_UART_Transmit_DMA(UART_stream->huart, &(UART_stream->byte), 1);
 	}
 
@@ -79,6 +80,7 @@ HAL_StatusTypeDef UARTTx_streamUpdate() {
 }
 
 HAL_StatusTypeDef UARTTx_streamStart(struct bitStream_Info * bitStream) {
+
 	UART_stream = bitStream;
 
 	UART_stream->state = ACTIVE;
@@ -157,16 +159,10 @@ HAL_StatusTypeDef UARTRx_streamStop() {
 
 static uint8_t dataAvailable() {
 	// Check if there is new data in the buffer
-	if (UART_stream->lastByteIn < UART_stream->lastByteOut) {
-		if (UART_stream->lastByteIn + UART_stream->length > UART_stream->lastByteOut) {
-			return 1;
-		}
+	if (UART_stream->lastByteIn != UART_stream->lastByteOut) {
+		return 1;
 	}
 	else {
-		if (UART_stream->lastByteIn > UART_stream->lastByteOut) {
-			return 1;
-		}
+		return 0;
 	}
-
-	return 0;
 }

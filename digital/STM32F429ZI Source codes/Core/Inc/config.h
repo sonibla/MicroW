@@ -23,7 +23,7 @@
 #define MICROW_RECEIVER 1
 
 // Emitter / Receiver config
-#define MODULE_TYPE MICROW_RECEIVER
+#define MODULE_TYPE MICROW_EMITTER
 
 // UART config
 #define RX_BUFFER_SIZE 128
@@ -48,5 +48,8 @@ enum errorHandlingEnum
 };
 
 #define ERROR_HANDLING NOTHING
+
+// Set ERROR_LED to 1 if LED at PG13 should turn on when an error occurs.
+#define ERROR_LED 1
 
 #endif /* INC_CONFIG_H_ */

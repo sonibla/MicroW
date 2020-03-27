@@ -45,7 +45,22 @@ static uint8_t dataAvailable();
 /*
  * saveValue saves provided value into sample stream to make it available to the DAC
  */
-static void saveSample(uint64_t value);
+static HAL_StatusTypeDef saveSample(uint64_t value);
+
+/*
+ * posiLastIncomingBit gives the position of the last incoming bit
+ */
+static uint32_t posiLastIncomingBit();
+
+/*
+ * posiNextOutgoingBit gives the position of the next bit that will go out
+ */
+static uint32_t posiNextOutgoingBit();
+
+/*
+ * posiNextNeededBit gives the position of the last bit needed to complete a sample
+ */
+static uint32_t posiNextNeededBit();
 
 /* Exported functions --------------------------------------------------------*/
 
@@ -57,6 +72,10 @@ HAL_StatusTypeDef decoder_streamStart(struct bitStream_Info * bitStream, struct 
 		return HAL_ERROR;
 	}
 
+	if (UART_stream->lastBitOut != 0) {
+		UART_stream->lastBitOut = 0;
+	}
+
 	DAC_stream->state = ACTIVE;
 	UART_stream->state = ACTIVE;
 
@@ -66,6 +85,11 @@ HAL_StatusTypeDef decoder_streamStart(struct bitStream_Info * bitStream, struct 
 HAL_StatusTypeDef decoder_streamRestart() {
 	DAC_stream->state = ACTIVE;
 	UART_stream->state = ACTIVE;
+	UART_stream->synchronized = 0;
+
+	if (UART_stream->lastBitOut != 0) {
+		UART_stream->lastBitOut = 0;
+	}
 
 	return HAL_OK;
 }
@@ -106,17 +130,19 @@ HAL_StatusTypeDef decoder_streamUpdate() {
 	UART_stream->lastBitOut = bitCursor;
 	UART_stream->lastByteOut = byteCursor;
 
-	saveSample(value);
-
-	return HAL_OK;
+	return saveSample(value);
 }
 
 static HAL_StatusTypeDef synchronize() {
 	// Try to synchronize...
 	if ((UART_stream->stream)[UART_stream->lastByteIn] == SYNC_SIGNAL) {
+
 		UART_stream->synchronized = 1;
 		UART_stream->lastBitOut = 0;
 		UART_stream->lastByteOut = UART_stream->lastByteIn + 1;
+		if (UART_stream->lastByteOut >= UART_stream->length) {
+			UART_stream->lastByteOut = 0;
+		}
 	}
 
 	if (UART_stream->synchronized == 0) {
@@ -127,32 +153,65 @@ static HAL_StatusTypeDef synchronize() {
 	}
 }
 
+static uint32_t posiLastIncomingBit() {
+	return (UART_stream->lastByteIn + 1) * 8 - 1;
+}
+
+static uint32_t posiNextOutgoingBit() {
+	return (UART_stream->lastByteOut * 8) + UART_stream->lastBitOut;
+}
+
+static uint32_t posiNextNeededBit() {
+	if (posiNextOutgoingBit() + WORD_LENGTH >= UART_stream->length * 8) {
+		return posiNextOutgoingBit() + WORD_LENGTH - UART_stream->length * 8;
+	}
+	else {
+		return posiNextOutgoingBit() + WORD_LENGTH;
+	}
+}
+
 static uint8_t dataAvailable() {
-	// Test if we have a new entire word (several conditions because of the array's limit)
-	if (UART_stream->lastByteOut * 8 + UART_stream->lastBitOut + WORD_LENGTH > UART_stream->length * 8) {
-		if (UART_stream->lastByteOut * 8 + UART_stream->lastBitOut + WORD_LENGTH > (UART_stream->lastByteIn + UART_stream->length + 1) * 8) {
+	if (posiNextNeededBit()/8 == posiLastIncomingBit()/8 && posiLastIncomingBit() >= posiNextNeededBit()) {
+		return 1;
+	}
+	else {
+		return 0;
+	}
+
+	/*
+	if (posiNextOutgoingBit() + WORD_LENGTH > UART_stream->length * 8) {
+		if (posiNextOutgoingBit() + WORD_LENGTH - 1 > posiLastIncomingBit() + UART_stream->length * 8) {
 			return 0;
 		}
 	}
 	else {
-		if (UART_stream->lastByteOut * 8 + UART_stream->lastBitOut + WORD_LENGTH > (UART_stream->lastByteIn + 1) * 8) {
+		if (posiNextOutgoingBit() + WORD_LENGTH - 1 > posiLastIncomingBit()) {
 			return 0;
 		}
 	}
 	return 1;
+	*/
 }
 
-static void saveSample(uint64_t value) {
+static HAL_StatusTypeDef saveSample(uint64_t value) {
 	DAC_stream->lastSampleIn += 1;
 	if (DAC_stream->lastSampleIn >= DAC_stream->length) {
 		DAC_stream->lastSampleIn = 0;
 	}
+
+	if (DAC_stream->lastSampleIn == DAC_stream->lastSampleOut) {
+		// Overrun error (DAC too slow, or buffer too short)
+		return HAL_ERROR;
+	}
+
 	(DAC_stream->stream)[DAC_stream->lastSampleIn] = value;
+	return HAL_OK;
 }
 
 HAL_StatusTypeDef decoder_streamStop() {
 	DAC_stream->state = INACTIVE;
 	UART_stream->state = INACTIVE;
+	UART_stream->synchronized = 0;
 
 	return HAL_OK;
 }

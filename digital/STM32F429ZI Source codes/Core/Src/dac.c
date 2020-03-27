@@ -29,7 +29,6 @@
 
 struct sampleStream_Info * DAC_stream;
 uint16_t maskSample;
-uint16_t fakevalue;
 
 /* Private function prototypes -----------------------------------------------*/
 
@@ -50,7 +49,7 @@ HAL_StatusTypeDef DAC_streamStart(struct sampleStream_Info * sampleStream) {
 	DAC_stream->state = ACTIVE;
 
 	maskSample = mask(SAMPLE_SIZE);
-	fakevalue = 0;
+
 	return HAL_DAC_Start(DAC_stream->hdac, DAC_stream->DAC_Channel);
 }
 
@@ -80,18 +79,12 @@ HAL_StatusTypeDef DAC_streamUpdate() {
 }
 
 static uint8_t sampleAvailable() {
-	// Check if a new sample is available
-	if (DAC_stream->lastSampleIn < DAC_stream->lastSampleOut) {
-		if (DAC_stream->lastSampleIn + DAC_stream->length > DAC_stream->lastSampleOut) {
-			return 1;
-		}
+	if (DAC_stream->lastSampleIn != DAC_stream->lastSampleOut) {
+		return 1;
 	}
 	else {
-		if (DAC_stream->lastSampleIn > DAC_stream->lastSampleOut) {
-			return 1;
-		}
+		return 0;
 	}
-	return 0;
 }
 
 HAL_StatusTypeDef DAC_streamStop() {

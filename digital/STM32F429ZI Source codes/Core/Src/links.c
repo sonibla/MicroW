@@ -123,6 +123,11 @@ HAL_StatusTypeDef emitter_stop() {
 	if (status != HAL_OK) {
 		return status;
 	}
+
+	status = streamFree(&sampleStream, &bitStream);
+	if (status != HAL_OK) {
+		return status;
+	}
 #else
 	status = HAL_ERROR;
 #endif
@@ -184,6 +189,11 @@ HAL_StatusTypeDef receiver_stop() {
 	if (status != HAL_OK) {
 		return status;
 	}
+
+	status = streamFree(&sampleStream, &bitStream);
+	if (status != HAL_OK) {
+		return status;
+	}
 #else
 	status = HAL_ERROR;
 #endif
@@ -199,7 +209,7 @@ static HAL_StatusTypeDef emitter_restart() {
 	HAL_StatusTypeDef status = HAL_OK;
 #if (MODULE_TYPE == MICROW_EMITTER)
 
-	status = streamInit(&sampleStream, &bitStream, peripherals.hadc, peripherals.huart);
+	status = emitter_stop();
 	if (status != HAL_OK) {
 		return status;
 	}
@@ -215,7 +225,7 @@ static HAL_StatusTypeDef receiver_restart() {
 	HAL_StatusTypeDef status = HAL_OK;
 #if (MODULE_TYPE == MICROW_RECEIVER)
 
-	status = streamInit(&sampleStream, &bitStream, peripherals.hdac, peripherals.DAC_Channel, peripherals.huart);
+	status = receiver_stop();
 	if (status != HAL_OK) {
 		return status;
 	}
@@ -280,6 +290,10 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef * huart) {
 static void Error_Handler() {
 	HAL_StatusTypeDef status = HAL_OK;
 
+	if (ERROR_LED) {
+		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_14, GPIO_PIN_SET);
+	}
+
 	if (ERROR_HANDLING == STOP || ERROR_HANDLING == RESTART) {
 		receiver_stop();
 		emitter_stop();
@@ -328,7 +342,7 @@ void Timer_RisingEdgeHandle() {
 void ADC_FinishedHandle() {
 	HAL_StatusTypeDef status = HAL_OK;
 
-	encoder_streamUpdate();
+	status = encoder_streamUpdate();
 
 	if (status != HAL_OK) {
 		Error_Handler();
@@ -340,7 +354,7 @@ void encode_FinishedHandle() {
 
 	status = UARTTx_streamUpdate();
 
-	if (status != HAL_OK) {
+	if (status != HAL_OK && status != HAL_BUSY) {
 		Error_Handler();
 	}
 }

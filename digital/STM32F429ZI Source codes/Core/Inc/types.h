@@ -89,4 +89,11 @@ HAL_StatusTypeDef streamInit(struct sampleStream_Info * sampleStream, struct bit
 HAL_StatusTypeDef streamInit(struct sampleStream_Info * sampleStream, struct bitStream_Info * bitStream, DAC_HandleTypeDef * hdac, uint32_t Channel, UART_HandleTypeDef * huart);
 #endif
 
+
+/*
+ * streamFree frees the memory space allocated to buffers
+ * You need to call this function before calling a second time streamInit
+ */
+HAL_StatusTypeDef streamFree(struct sampleStream_Info * sampleStream, struct bitStream_Info * bitStream);
+
 #endif /* INC_TYPES_H_ */

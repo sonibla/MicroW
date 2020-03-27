@@ -30,6 +30,12 @@
 /* Private function prototypes -----------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
 
+HAL_StatusTypeDef streamFree(struct sampleStream_Info * sampleStream, struct bitStream_Info * bitStream) {
+	free(bitStream->stream);
+	free(sampleStream->stream);
+	return HAL_OK;
+}
+
 #if (MODULE_TYPE == MICROW_EMITTER)
 HAL_StatusTypeDef streamInit(struct sampleStream_Info * sampleStream, struct bitStream_Info * bitStream, ADC_HandleTypeDef * hadc, UART_HandleTypeDef * huart) {
 #else
@@ -49,8 +55,14 @@ HAL_StatusTypeDef streamInit(struct sampleStream_Info * sampleStream, struct bit
 
 	bitStream->lastBitOut = 8;
 
-	bitStream->lastByteIn = bitStream->length;
-	bitStream->lastByteOut = bitStream->length;
+	if (MODULE_TYPE == MICROW_EMITTER) {
+		bitStream->lastByteIn = bitStream->length - 1;
+		bitStream->lastByteOut = bitStream->length - 1;
+	}
+	else {
+		bitStream->lastByteIn = bitStream->length - 1;
+		bitStream->lastByteOut = 0;
+	}
 	bitStream->bytesSinceLastSyncSignal = SYNC_PERIOD + 1;
 
     bitStream->stream = NULL;

@@ -70,6 +70,11 @@ HAL_StatusTypeDef ADC_streamUpdate() {
 		ADC_stream->lastSampleIn = 0;
 	}
 
+	if (ADC_stream->lastSampleIn == ADC_stream->lastSampleOut) {
+		// Overrun error (encoder too slow)
+		return HAL_ERROR;
+	}
+
 	(ADC_stream->stream)[ADC_stream->lastSampleIn] = value;
 
 	ADC_FinishedHandle();
