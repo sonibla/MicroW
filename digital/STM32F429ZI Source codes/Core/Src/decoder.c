@@ -177,20 +177,6 @@ static uint8_t dataAvailable() {
 	else {
 		return 0;
 	}
-
-	/*
-	if (posiNextOutgoingBit() + WORD_LENGTH > UART_stream->length * 8) {
-		if (posiNextOutgoingBit() + WORD_LENGTH - 1 > posiLastIncomingBit() + UART_stream->length * 8) {
-			return 0;
-		}
-	}
-	else {
-		if (posiNextOutgoingBit() + WORD_LENGTH - 1 > posiLastIncomingBit()) {
-			return 0;
-		}
-	}
-	return 1;
-	*/
 }
 
 static HAL_StatusTypeDef saveSample(uint64_t value) {
