@@ -144,6 +144,10 @@ Possible values:
 
 Default value : `NOTHING`
 
+#### `ERROR_LED`
+
+Set `ERROR_LED` to 1 if LED at PG13 should turn on when an error occurs.
+
 ### Main API (links.h)
 
 The goal of this API is to create links between lower lever MicroW APIs : calling the right function at the right time and managing events, for example end of data transfers, errors...
@@ -310,6 +314,20 @@ Initializes data structures with consistent data to begin with.
   * DAC_CHANNEL_1: DAC Channel1 selected
   * DAC_CHANNEL_2: DAC Channel2 selected
 - **huart**: pointer to a USART_HandleTypeDef structure that contains the configuration information for the specified USART module.
+
+##### Return values
+- **HAL**: status
+
+#### `streamFree`
+```
+HAL_StatusTypeDef streamFree(struct sampleStream_Info * sampleStream, 
+                             struct bitStream_Info * bitStream);
+```
+Frees the memory space allocated to buffers. You need to call this function before calling a second time `streamInit`.
+
+##### Parameters
+- **sampleStream**: pointer to the sampleStream_Info structure
+- **bitStream**: pointer to the bitStream_Info structure
 
 ##### Return values
 - **HAL**: status
