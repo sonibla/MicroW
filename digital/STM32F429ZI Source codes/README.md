@@ -75,6 +75,8 @@ On the *emitter* module, connect the analog input to ```PAO``` pin (ADC) and the
 
 On the *receiver* module, connect the analog output to ```PA4``` pin (DAC) and the Xbee to ```PA10``` pin (UART_RX).
 
+On both modules, ```PG13``` pin corresponds to the error LED. Optional.
+
 ### Porting to another microcontroller
 
 The easyest way to port this project to another microcontroller (after making sure the peripherals fit the requirements) is to create a new project (for example in STM32CubeIDE), configure it according to your microcontroller, then import the codes.
@@ -93,20 +95,20 @@ Set it to `MICROW_EMITTER` or `MICROW_RECEIVER` to determine which MicroW module
 Determines the length of the uint8_t array that will contain raw serial data, on the receiver side.
 Should not be below ADC's bit depth divided by 8, or existing data will be wiped out by incoming bytes before being decoded.
 
-Default value : 128
+Default value : 32
 
 #### `TX_BUFFER_SIZE`
 
 Determines the length of the *uint8_t* array that will contain raw serial data, on the receiver side.
 Should not be below ADC's bit depth divided by 8, or it won't be possible to save encoded data into this buffer.
 
-Default value : 128
+Default value : 32
 
 #### `SAMPLE_BUFFER_SIZE`
 
 Determines the length of the *uint32_t* array that will contain ADC and DAC samples.
 
-Default value : 64
+Default value : 32
 
 #### `SAMPLE_SIZE`
 
@@ -134,7 +136,7 @@ Default value : 64
 
 #### `ERROR_HANDLING`
 
-Determines what to do in case of error.
+Determines what to do in case of error. In general, it's better to consider that any unexpected error is an attack attempt.
 
 Possible values:
  - `NOTHING`
@@ -142,11 +144,19 @@ Possible values:
  - `STOP`
  - `INFINITE_LOOP`
 
-Default value : `NOTHING`
+Default value : `RESTART`
 
 #### `ERROR_LED`
 
 Set `ERROR_LED` to 1 if LED at PG13 should turn on when an error occurs.
+
+Default value : 1
+
+#### `ERROR_DELAY`
+
+`ERROR_DELAY` corresponds to a delay in milliseconds to stop the process when an error occurs. Can be useful for debugging. To disable this feature, set it to 0.
+
+Default value : 0
 
 ### Main API (links.h)
 
@@ -655,11 +665,11 @@ Here is a summary of different clocks :
 
 ### ADC
 
-Like most modern VoIP communication products, MicroW samples at 16kHz. 
+Like most modern VoIP communication products, MicroW samples at 12kHz. 
 This frequency is controlled by a timer, the duration of an ADC conversion is is negligible compared to the sampling period. 
 
-A sampling rate of 16MHz is enough to record voice because barely no one speaks above 8kHz. 
-However, MicroW won't be able to record good quality music, because humans can hear sound up to 20kHz.
+A sampling rate of 12kHz is enough to record voice because barely no one speaks above 6kHz. 
+However, MicroW won't be able to record good quality music, because humans can hear sound up to 20kHz (to record good quality  music, MicroW should sample at at least 40kHz).
 MicroW only need one ADC peripheral to sample voice because it uses mono sound.
 
 To control the sampling frequency, at every rising edge of the timer ```HAL_ADC_Start_IT()``` is called, which will start a regular conversion and generate a callback when it's finished.
@@ -708,7 +718,7 @@ hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
 
 ### DAC
 
-The refresh rate of the DAC is controlled by a timer, and should be equal to the sampling time of the ADC (16MHz by default).
+The refresh rate of the DAC is controlled by a timer, and should be equal to the sampling time of the ADC (12kHz by default).
 The latency introduced by the conversion is negligible compared to the transmission of the radio signal.
 
 To control the refresh frequency, at every rising edge of the timer, ```HAL_DAC_SetValue()``` is called.
@@ -722,7 +732,7 @@ STM32F4's DAC has a bit depth of 12 bit per sample.
 
 ### Timers
 
-We use TIM2 timer to set the sampling frequency (**16kHz**)
+We use TIM2 timer to set the sampling frequency (**12kHz**)
 
 Let's use internal clock (90MHz) :
 ```
@@ -736,14 +746,14 @@ Here is the formula that explain how to contigure timer's parameters :
 
 <img src="https://latex.codecogs.com/gif.latex?\frac{F_{Timer}}{F_{Clock}}&space;=&space;\frac{1}{(Prescaler&space;&plus;&space;1)&space;\times&space;(AutoreloadPeriod&space;&plus;&space;1)}" title="\frac{F_{Timer}}{F_{Clock}} = \frac{1}{(Prescaler + 1) \times (AutoreloadPeriod + 1)}" />
 
-Knowing timer and clock frequencies (16kHz and 90MHz), we can set the autoreload period to **5624** and the clock prescaler to 0. It's good to keep a small prescaler to reduce errors.
+Knowing timer and clock frequencies (12kHz and 90MHz), we can set the autoreload period to **7499** and the clock prescaler to 0. It's good to keep a small prescaler to reduce errors.
 ```
 htim2.Init.Prescaler = 0;
 htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-htim2.Init.Period = 5624;
+htim2.Init.Period = 7499;
 ```
 
-We want an output trigger when the timer has finished counting from 0 to 5624 :
+We want an output trigger when the timer has finished counting from 0 to 7499 :
 ```
 sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
 ```
@@ -774,16 +784,14 @@ HAL_NVIC_EnableIRQ(DMA2_Stream7_IRQn);
 
 MicroW send and receives bytes one-by-one to be more efficient.
 
-On the receiver module, everytime a byte is reveived it is immediately stored and analyzed, while UART continues receiving data.
-On the emitter module, as soon as a byte has been encoded it is send.
+On the receiver module, everytime a byte is reveived, it is immediately stored and analyzed.
+When the byte is received, a callback automatically restarts UART reception.
 
-MicroW needs at least a 192kb/s USART interface, but the first standard value greater than 192000 baud is 230400 baud.
-```
-huart1.Init.BaudRate = 230400;
-```
+On the emitter module, as soon as a byte has been encoded it is send.
 
 STM32's UART needs to have the same configuration as in the Xbee module, by default we set everything to **230400 8N1**. The connection between the microcontroller and the Xbee is a small wire so the probability of error is low, that's why we don't use any parity bit.
 ```
+huart1.Init.BaudRate = 230400;
 huart1.Init.WordLength = UART_WORDLENGTH_8B;
 huart1.Init.StopBits = UART_STOPBITS_1;
 huart1.Init.Parity = UART_PARITY_NONE;
@@ -814,7 +822,7 @@ DMA streams are configured using NVIC interrupts.
 
 ### Encoding and decoding data
 
-Knowing that we sample 12-bit analog values at 16kHz (192kb/s), and Xbee modules can reach 250kb/s, we don't need data compression. 
+Knowing that Xbee modules can reach 250kb/s, we don't need data compression. 
 We have chosen to send the samples one directly after another in the serial line, as shown on the diagram below.
 
 ![serial timing](../../images/Serial_line_timing.png "MicroW serial communication")
