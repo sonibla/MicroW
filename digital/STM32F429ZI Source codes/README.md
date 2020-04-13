@@ -797,6 +797,10 @@ huart1.Init.StopBits = UART_STOPBITS_1;
 huart1.Init.Parity = UART_PARITY_NONE;
 ```
 
+Here is the formula telling the minimum UART speed :
+
+<img src="https://latex.codecogs.com/gif.latex?UART_{Speed}&space;\geq&space;ADC_{Depth}&space;\times&space;ADC_{Freq}&space;\times&space;\left&space;(&space;1&space;&plus;&space;\frac{1}{SyncPeriod}&space;\right&space;)&space;\left&space;(&space;1&space;&plus;&space;\frac{1&space;&plus;&space;UART_{Parity}&space;&plus;&space;UART_{Stop}}{UART_{WordLength}}&space;\right&space;)" title="UART_{Speed} \geq ADC_{Depth} \times ADC_{Freq} \times \left ( 1 + \frac{1}{SyncPeriod} \right ) \left ( 1 + \frac{1 + UART_{Parity} + UART_{Stop}}{UART_{WordLength}} \right )" />
+
 As UART initialization is the same for the emitter and the receiver, so the peripheral needs to be able to send and receive data.
 ```
 huart1.Init.Mode = UART_MODE_TX_RX;
