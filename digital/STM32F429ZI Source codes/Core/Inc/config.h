@@ -26,11 +26,11 @@
 #define MODULE_TYPE MICROW_EMITTER
 
 // UART config
-#define RX_BUFFER_SIZE 128
-#define TX_BUFFER_SIZE 128
+#define RX_BUFFER_SIZE 32
+#define TX_BUFFER_SIZE 32
 
 // ADC/DAC config
-#define SAMPLE_BUFFER_SIZE 64
+#define SAMPLE_BUFFER_SIZE 32
 #define SAMPLE_SIZE 12
 
 // Encode/decode config
@@ -47,9 +47,12 @@ enum errorHandlingEnum
 	INFINITE_LOOP
 };
 
-#define ERROR_HANDLING NOTHING
+#define ERROR_HANDLING RESTART
 
 // Set ERROR_LED to 1 if LED at PG13 should turn on when an error occurs.
 #define ERROR_LED 1
+
+// ERROR_DELAY is the time to wait when an error occurs
+#define ERROR_DELAY 0
 
 #endif /* INC_CONFIG_H_ */

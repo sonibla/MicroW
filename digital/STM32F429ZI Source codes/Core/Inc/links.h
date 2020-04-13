@@ -89,6 +89,7 @@ HAL_StatusTypeDef emitter_stop();
 HAL_StatusTypeDef receiver_start(UART_HandleTypeDef * huart, DAC_HandleTypeDef * hdac, uint32_t DAC_Channel, TIM_HandleTypeDef * htim);
 HAL_StatusTypeDef receiver_stop();
 
+
 /* Private defines -----------------------------------------------------------*/
 
 #ifdef __cplusplus

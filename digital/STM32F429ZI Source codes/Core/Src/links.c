@@ -103,6 +103,10 @@ HAL_StatusTypeDef emitter_start(UART_HandleTypeDef * huart, ADC_HandleTypeDef * 
 #else
 	status = HAL_ERROR;
 #endif
+	if (ERROR_LED && status == HAL_OK) {
+		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_14, GPIO_PIN_RESET);
+	}
+
 	return status;
 }
 
@@ -169,6 +173,10 @@ HAL_StatusTypeDef receiver_start(UART_HandleTypeDef * huart, DAC_HandleTypeDef *
 #else
 	status = HAL_ERROR;
 #endif
+	if (ERROR_LED && status == HAL_OK) {
+		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_14, GPIO_PIN_RESET);
+	}
+
 	return status;
 }
 
@@ -292,6 +300,10 @@ static void Error_Handler() {
 
 	if (ERROR_LED) {
 		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_14, GPIO_PIN_SET);
+	}
+
+	if (ERROR_DELAY) {
+		HAL_Delay(ERROR_DELAY);
 	}
 
 	if (ERROR_HANDLING == STOP || ERROR_HANDLING == RESTART) {

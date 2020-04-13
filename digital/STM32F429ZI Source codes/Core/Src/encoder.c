@@ -128,7 +128,7 @@ HAL_StatusTypeDef encoder_streamUpdate(){
 		// Check if the above process encoded an entire sample
 		if (WORD_LENGTH <= ADC_stream->bitsOut) {
 			nextSample();
-			if (UART_stream->bytesSinceLastSyncSignal > SYNC_PERIOD) {
+			if (UART_stream->bytesSinceLastSyncSignal + 1 >= SYNC_PERIOD) {
 				status = sendSyncSignal();
 				if (status != HAL_OK) {
 					return status;
