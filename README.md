@@ -27,7 +27,7 @@ Here is an overview of the inside of each module :
 
 ![overview modules](images/Overview_modules.png "MicroW overview: modules")
 
-Details about electrical circuits will be in [analog](analog) folder. Embedded C codes, radio transmission and everything digital related will be in [digital](digital) folder.
+Details about electrical circuits will be in [analog](analog) folder. Embedded C codes, radio transmission details and everything digital related are in [digital](digital) folder.
 
 ## Current project state
 
