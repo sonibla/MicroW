@@ -19,7 +19,7 @@ MicroW is a *wireless* device that transmits the coxswain's voice in a rowing bo
 
 MicroW consists of several waterproof devices placed inside a rowing boat. The coxswain has an emitter module, and one or several receiver modules are in the boat. Instead of wires, MicroW uses worldwide approved 2.4 GHz radio signal.
 
-![overview boat](images/Overview_boat.png "MicroW overview: boat scale")
+![overview boat](images/boat.png "MicroW overview: boat scale")
 
 Coxswain's voice is processed by analog and numerical circuits and encrypted with 128-bit AES before radio transmission. Receiver modules shouldn't be more than 30 meters away from the emitter, which is enough compared to the lengh of a rowing boat (about 20 meters).
 
