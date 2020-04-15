@@ -13,6 +13,7 @@ MicroW is a *wireless* device that transmits the coxswain's voice in a rowing bo
     <a href="https://opensource.org/licenses/BSD-3-Clause"><img src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" alt="License: BSD-3-Clause"/></a>
     <img src="https://img.shields.io/badge/Open%20Source-%20%E2%99%A5%20-brightgreen" alt="Open Source"/>
     <img src="https://img.shields.io/badge/Open%20Hardware-%20%E2%99%A5%20-brightgreen" alt="Open Hardware"/>
+    <img alt="GitHub stars" src="https://img.shields.io/github/stars/sonibla/MicroW">
 </p>
 
 ## Overview
