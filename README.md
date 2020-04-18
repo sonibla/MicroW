@@ -28,11 +28,11 @@ Here is an overview of the inside of each module :
 
 ![overview modules](images/Overview_modules.png "MicroW overview: modules")
 
-Details about electrical circuits will be in [analog](analog) folder. Embedded C codes, radio transmission details and everything digital related are in [digital](digital) folder.
+Details about electrical circuits are in [analog](analog) folder. Embedded C codes, radio transmission details and everything digital related are in [digital](digital) folder.
 
 ## Current project state
 
-Currently, only [embedded C codes, corresponding documentation](https://github.com/sonibla/MicroW/tree/master/digital/STM32F429ZI%20Source%20codes), a quick guide to [configure Xbee modules](https://github.com/sonibla/MicroW/tree/master/digital/Xbee%20configuration) and some [electrical schematics](Analog) are available.
+Currently, only [embedded C codes, corresponding documentation](https://github.com/sonibla/MicroW/tree/master/digital/STM32F429ZI%20Source%20codes), a quick guide to [configure Xbee modules](https://github.com/sonibla/MicroW/tree/master/digital/Xbee%20configuration) and some [electrical schematics](analog) are available.
 More documentation and analog circuits soon available.
 
 ## License
