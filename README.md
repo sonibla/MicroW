@@ -22,7 +22,7 @@ MicroW consists of several waterproof devices placed inside a rowing boat. The c
 
 ![overview boat](images/boat.png "MicroW overview: boat scale")
 
-Coxswain's voice is processed by analog and numerical circuits and encrypted with 128-bit AES before radio transmission. Receiver modules shouldn't be more than 30 meters away from the emitter, which is enough compared to the lengh of a rowing boat (about 20 meters).
+Coxswain's voice is processed by analog and numerical circuits and encrypted with 128-bit AES before radio transmission. Receiver modules shouldn't be more than 30 meters away from the emitter, which is enough compared to the length of a rowing boat (about 20 meters).
 
 Here is an overview of the inside of each module :
 
