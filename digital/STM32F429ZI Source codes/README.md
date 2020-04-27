@@ -841,9 +841,9 @@ If a encoded byte is unintentionnaly the synchronization signal (0xFF by default
 
 ![serial timing worst case](../../images/Serial_line_timing_worst_case.png "MicroW serial communication : worst case")
 
-It may causes an error up to 0.4% on the analog value, as shown in the formula below : the worst case is when the first and the fifth bits of the 12-bit analog value are changed.
+It may causes an error up to 0.2% on the analog value, as shown in the formula below : the worst case is when the first and the fifth bits of the 12-bit analog value are changed.
 
-<img src="https://latex.codecogs.com/gif.latex?\frac{2^4&plus;2^0}{2^{12}}&space;\simeq&space;0.004" title="\frac{2^4+2^0}{2^{12}} \simeq 0.004" />
+<img src="https://latex.codecogs.com/gif.latex?\frac{2^4&plus;2^0}{2^{13}-1}&space;\simeq&space;0.002" title="\frac{2^4+2^0}{2^{13}-1} \simeq 0.002" />
 
 ### Summary
 
