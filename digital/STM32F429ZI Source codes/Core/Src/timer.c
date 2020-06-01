@@ -21,17 +21,24 @@
 #include "stm32f4xx_hal.h"
 #include "config.h"
 
-/* Private typedef -----------------------------------------------------------*/
-/* Private defines -----------------------------------------------------------*/
-/* Private macros ------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
-/* Private function prototypes -----------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
 
+/**
+ * @brief enables the counter and interruptions of provided timer
+ * 
+ * @param htim[IN] pointer to a TIM_HandleTypeDef structure that contains the configuration information for TIM module.
+ * @return HAL status (HAL_OK if no errors occured).
+ */
 HAL_StatusTypeDef Timer_Start(TIM_HandleTypeDef * htim) {
 	return HAL_TIM_Base_Start_IT(htim);
 }
 
+/**
+ * @brief disables the counter and interruptions of provided timer
+ * 
+ * @param htim[IN] pointer to a TIM_HandleTypeDef structure that contains the configuration information for TIM module.
+ * @return HAL status (HAL_OK if no errors occured).
+ */
 HAL_StatusTypeDef Timer_Stop(TIM_HandleTypeDef * htim) {
 	return HAL_TIM_Base_Stop_IT(htim);
 }
