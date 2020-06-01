@@ -23,34 +23,15 @@
 #include "config.h"
 
 /* Private typedef -----------------------------------------------------------*/
-
-struct UART_Stream
-{
-	UART_HandleTypeDef * huart;
-	uint8_t * buffer;
-	uint8_t byte;
-	uint8_t active; // boolean, indicates if the stream is running
-	uint16_t size;
-	uint16_t cursor;
-};
-
 /* Private defines -----------------------------------------------------------*/
 /* Private macros ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 
-struct UART_Stream RxStream;
-struct bitStream_Info * UART_stream;
+struct bitStream_Info * UART_stream = NULL;
 
 /* Private function prototypes -----------------------------------------------*/
 
-/*
- * dataAvailable returns 1 if new data is in the buffer
- */
 static uint8_t dataAvailable();
-
-/*
- * saveByte saves given byte into the buffer
- */
 static void saveByte(uint8_t byte);
 
 /* Exported functions --------------------------------------------------------*/
@@ -59,15 +40,76 @@ static void saveByte(uint8_t byte);
                   ##### Transmit functions #####
 =============================================================================*/
 
-HAL_StatusTypeDef UARTTx_streamUpdate() {
-	if (UART_stream->state != ACTIVE) {
+/**
+ * @brief initializes a stream to continuously send data over UART interface
+ * 
+ * @param bitStream[in] pointer to an initialized bitStream_Info structure
+ * @return HAL status (HAL_OK if no errors occured).
+ * @note This function uses HAL, the UART peripheral must be initialized with HAL
+ */
+HAL_StatusTypeDef UARTTx_streamStart(struct bitStream_Info * bitStream)
+{
+	// Save the pointer to the struct in a global variable:
+	UART_stream = bitStream;
+
+	UART_stream->state = ACTIVE;
+	return UARTTx_streamUpdate();
+}
+
+/**
+ * @brief starts a stream without overwriting existing parameters.
+ * Existing parameters are saved in the UART_stream global variable
+ * 
+ * @return HAL status (HAL_OK if no errors occured).
+ * @note this function should be called after data has been sent
+ * @warning UARTTx_streamStart() must be called at least once before to
+ * calling UARTTx_streamRestart()
+ */
+HAL_StatusTypeDef UARTTx_streamRestart()
+{
+	/* Check that UART parameters already exists 
+	 * (ie UARTTx_streamStart() was called before)
+	 */
+	if (UART_stream == NULL)
+	{
+		return HAL_ERROR;
+	}
+	
+	UART_stream->state = ACTIVE;
+
+	return UARTTx_streamUpdate();
+}
+
+/**
+ * @brief sends data if necessary and updates the stream structure fields
+ * 
+ * @return HAL status (HAL_OK if no errors occured).
+ * @note This function should be called when the UART buffer has been 
+ * successfully updated and data is ready to be sent
+ */
+HAL_StatusTypeDef UARTTx_streamUpdate()
+{
+	/* Check that UART parameters already exists 
+	 * (ie UARTTx_streamStart() was called before)
+	 */
+	if (UART_stream == NULL)
+	{
+		return HAL_ERROR;
+	}
+	
+	if (UART_stream->state != ACTIVE)
+	{
 		return HAL_BUSY;
 	}
 
-	if (dataAvailable()) {
+	if (dataAvailable())
+	{
 		UART_stream->state = BUSY;
+		
+		// Send one byte :
 		UART_stream->lastByteOut += 1;
-		if (UART_stream->lastByteOut >= UART_stream->length) {
+		if (UART_stream->lastByteOut >= UART_stream->length)
+		{
 			UART_stream->lastByteOut = 0;
 		}
 
@@ -79,22 +121,22 @@ HAL_StatusTypeDef UARTTx_streamUpdate() {
 	return HAL_OK;
 }
 
-HAL_StatusTypeDef UARTTx_streamStart(struct bitStream_Info * bitStream) {
-
-	UART_stream = bitStream;
-
-	UART_stream->state = ACTIVE;
-
-	return UARTTx_streamUpdate();
-}
-
-HAL_StatusTypeDef UARTTx_streamRestart() {
-	UART_stream->state = ACTIVE;
-
-	return UARTTx_streamUpdate();
-}
-
-HAL_StatusTypeDef UARTTx_streamStop() {
+/**
+ * @brief stops a running stream.
+ * 
+ * @return HAL status (HAL_OK if no errors occured).
+ */
+HAL_StatusTypeDef UARTTx_streamStop()
+{
+	/* Check that UART parameters already exists 
+	 * (ie UARTTx_streamStart() was called before)
+	 */
+	if (UART_stream == NULL)
+	{
+		return HAL_ERROR;
+	}
+	
+	// Mark the stream as inative:
 	UART_stream->state = INACTIVE;
 	return HAL_OK;
 }
@@ -103,12 +145,21 @@ HAL_StatusTypeDef UARTTx_streamStop() {
                   ##### Receive functions #####
 =============================================================================*/
 
-HAL_StatusTypeDef UARTRx_streamStart(struct bitStream_Info * bitStream) {
+/**
+ * @brief initializes a stream to continuously receive data with UART interface
+ * 
+ * @param bitStream[in] pointer to an initialized bitStream_Info structure
+ * @return HAL status (HAL_OK if no errors occured).
+ * @note This function uses HAL, the UART peripheral must be initialized with HAL
+ */
+HAL_StatusTypeDef UARTRx_streamStart(struct bitStream_Info * bitStream)
+{
 	UART_HandleTypeDef * huart;
 	UART_stream = bitStream;
 
 	huart = UART_stream->huart;
-	if ((*huart).Init.Mode != UART_MODE_TX_RX && (*huart).Init.Mode != UART_MODE_RX) {
+	if ((*huart).Init.Mode != UART_MODE_TX_RX && (*huart).Init.Mode != UART_MODE_RX)
+	{
 		return HAL_ERROR;
 	}
 
@@ -116,53 +167,132 @@ HAL_StatusTypeDef UARTRx_streamStart(struct bitStream_Info * bitStream) {
 	return HAL_UART_Receive_DMA(UART_stream->huart, &(UART_stream->byte), 1);
 }
 
-HAL_StatusTypeDef UARTRx_streamRestart() {
+/**
+ * @brief starts a stream without overwriting existing parameters.
+ * Existing parameters are saved in the UART_stream global variable
+ * 
+ * @return HAL status (HAL_OK if no errors occured).
+ * @warning UARTTx_streamStart() must be called at least once before to
+ * calling UARTTx_streamRestart()
+ */
+HAL_StatusTypeDef UARTRx_streamRestart()
+{
+	/* Check that UART parameters already exists 
+	 * (ie UARTRx_streamStart() was called before)
+	 */
+	if (UART_stream == NULL)
+	{
+		return HAL_ERROR;
+	}
+	
 	UART_stream->state = BUSY;
 	return HAL_UART_Receive_DMA(UART_stream->huart, &(UART_stream->byte), 1);
 }
 
-HAL_StatusTypeDef UARTRx_streamUpdate() {
+/**
+ * @brief updates the stream structure fields and restarts data reception if necessary
+ * 
+ * @return HAL status (HAL_OK if no errors occured).
+ * @note This function should be called at the end of data reception
+ */
+HAL_StatusTypeDef UARTRx_streamUpdate()
+{
+	uint8_t value;
+	HAL_StatusTypeDef status;
+	
+	/* Check that UART parameters already exists 
+	 * (ie UARTRx_streamStart() was called before)
+	 */
+	if (UART_stream == NULL)
+	{
+		return HAL_ERROR;
+	}
+	
 	// Immediately restart the UART so that we don't miss any bit
-	HAL_StatusTypeDef status = HAL_OK;
-	uint8_t value = UART_stream->byte;
+	status = HAL_OK;
+	value = UART_stream->byte;
 
-	if (UART_stream->state != INACTIVE) {
+	if (UART_stream->state != INACTIVE)
+	{
 		status = UARTRx_streamRestart();
 	}
-	else {
+	else
+	{
 		return HAL_ERROR;
 	}
 
 	saveByte(value);
 
+	// Tell the main API that data has beed saved in the buffer
 	UARTRx_FinishedHandle();
 	return status;
 }
 
-static void saveByte(uint8_t byte) {
-	UART_stream->lastByteIn += 1;
-	if (UART_stream->lastByteIn >= UART_stream->length) {
-		UART_stream->lastByteIn = 0;
+/**
+ * @brief stops a running stream.
+ * 
+ * @return HAL status (HAL_OK if no errors occured).
+ */
+HAL_StatusTypeDef UARTRx_streamStop()
+{
+	/* Check that UART parameters already exists 
+	 * (ie UARTRx_streamStart() was called before)
+	 */
+	if (UART_stream == NULL)
+	{
+		return HAL_ERROR;
 	}
-	(UART_stream->stream)[UART_stream->lastByteIn] = byte;
-}
-
-HAL_StatusTypeDef UARTRx_streamStop() {
+	
 	UART_stream->state = INACTIVE;
 
 	return HAL_UART_Abort(UART_stream->huart);
+}
+
+/**
+ * @brief saves a byte into the buffer
+ * 
+ * @param byte[in] byte to save
+ * @return None
+ */
+static void saveByte(uint8_t byte)
+{
+	/* Check that UART parameters already exists */
+	if (UART_stream == NULL)
+	{
+		return HAL_ERROR;
+	}
+	
+	UART_stream->lastByteIn += 1;
+	if (UART_stream->lastByteIn >= UART_stream->length)
+	{
+		UART_stream->lastByteIn = 0;
+	}
+	(UART_stream->stream)[UART_stream->lastByteIn] = byte;
 }
 
 /*=============================================================================
               ##### Receive and transmit functions #####
 =============================================================================*/
 
-static uint8_t dataAvailable() {
+/**
+ * @brief checks if unsaved data is in the buffer
+ * 
+ * @return 1 if new data is in the buffer
+ */
+static uint8_t dataAvailable()
+{
+	/* Check that UART parameters already exists */
+	if (UART_stream == NULL)
+	{
+		return HAL_ERROR;
+	}
 	// Check if there is new data in the buffer
-	if (UART_stream->lastByteIn != UART_stream->lastByteOut) {
+	if (UART_stream->lastByteIn != UART_stream->lastByteOut)
+	{
 		return 1;
 	}
-	else {
+	else
+	{
 		return 0;
 	}
 }

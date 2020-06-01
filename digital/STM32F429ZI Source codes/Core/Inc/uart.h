@@ -23,65 +23,26 @@
 extern "C" {
 #endif
 
-/* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
 #include "types.h"
-
-/* Private includes ----------------------------------------------------------*/
-/* Exported types ------------------------------------------------------------*/
-/* Exported constants --------------------------------------------------------*/
-/* Exported macro ------------------------------------------------------------*/
-/* Exported functions prototypes ---------------------------------------------*/
 
 /*=============================================================================
                   ##### Transmit functions #####
 =============================================================================*/
 
-/*
- * UARTTx_streamStart initializes a stream to continuously send data
- */
 HAL_StatusTypeDef UARTTx_streamStart(struct bitStream_Info * bitStream);
-
-/*
- * UARTTx_streamRestart starts a stream without overwriting existing parameters.
- */
 HAL_StatusTypeDef UARTTx_streamRestart();
-
-/*
- * UARTTx_streamUpdate should be called when the UART buffer has been successfully updated
- */
 HAL_StatusTypeDef UARTTx_streamUpdate();
-
-/*
- * UARTTx_streamStop stops a running stream.
- */
 HAL_StatusTypeDef UARTTx_streamStop();
 
 /*=============================================================================
                   ##### Receive functions #####
 =============================================================================*/
 
-/*
- * UARTRx_streamStart initializes a stream to continuously receive data
- */
 HAL_StatusTypeDef UARTRx_streamStart(struct bitStream_Info * bitStream);
-
-/*
- * UARTRx_streamRestart starts a stream without overwriting existing parameters.
- */
 HAL_StatusTypeDef UARTRx_streamRestart();
-
-/*
- * UARTRx_streamUpdate should be called at the end of data reception
- */
 HAL_StatusTypeDef UARTRx_streamUpdate();
-
-/*
- * UARTRx_streamStop stops a running stream.
- */
 HAL_StatusTypeDef UARTRx_streamStop();
-
-/* Private defines -----------------------------------------------------------*/
 
 #ifdef __cplusplus
 }
