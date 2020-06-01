@@ -30,12 +30,44 @@
 /* Private function prototypes -----------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
 
-HAL_StatusTypeDef streamFree(struct sampleStream_Info * sampleStream, struct bitStream_Info * bitStream) {
-	free(bitStream->stream);
-	free(sampleStream->stream);
+/**
+ * @brief frees the memory space allocated to buffers
+ * 
+ * @param sampleStream[IN] pointer to the sampleStream_Info structure
+ * @param bitStream[IN] pointer to the bitStream_Info structure
+ * @return HAL status (HAL_OK if no errors occured).
+ * @note You need to call this function before calling a second time streamInit
+ */
+HAL_StatusTypeDef streamFree(struct sampleStream_Info * sampleStream, struct bitStream_Info * bitStream)
+{
+	if (bitStream->stream != NULL)
+	{
+		free(bitStream->stream);
+	}
+	
+	if (sampleStream->stream != NULL)
+	{
+		free(sampleStream->stream);
+	}
+	
 	return HAL_OK;
 }
 
+/**
+ * @brief Initializes data structures with consistent data to begin with.
+ * 
+ * Initializes sampleStream_Info and bitStream_Info structures with consistent
+ * data allowing to immediately start the receiver or emitter.
+ * 
+ * @param sampleStream[IN] pointer to the sampleStream_Info structure that will be used by lower level APIs
+ * @param bitStream[IN] pointer to the bitStream_Info structure that will be used by lower level APIs
+ * @param hadc[IN] (optional) pointer to a ADC_HandleTypeDef structure that contains the configuration information for the specified ADC
+ * @param hdac[IN] (optional) pointer to a DAC_HandleTypeDef structure that contains the configuration information for the specified DAC
+ * @param DAC_Channel[IN] (optional): The selected DAC channel. This parameter can be one of the following values: DAC_CHANNEL_1 or DAC_CHANNEL_2
+ * @param huart[IN] pointer to a USART_HandleTypeDef structure that contains the configuration information for the specified USART module.
+ * @return HAL status (HAL_OK if no errors occured).
+ * @note The function definition depends on module's type because only ADC or DAC is needed, never both.
+ */
 #if (MODULE_TYPE == MICROW_EMITTER)
 HAL_StatusTypeDef streamInit(struct sampleStream_Info * sampleStream, struct bitStream_Info * bitStream, ADC_HandleTypeDef * hadc, UART_HandleTypeDef * huart) {
 #else
@@ -46,20 +78,24 @@ HAL_StatusTypeDef streamInit(struct sampleStream_Info * sampleStream, struct bit
 	bitStream->huart = huart;
 	bitStream->state = INACTIVE;
 
-	if (MODULE_TYPE == MICROW_EMITTER) {
+	if (MODULE_TYPE == MICROW_EMITTER)
+	{
 		bitStream->length = TX_BUFFER_SIZE;
 	}
-	else {
+	else
+	{
 		bitStream->length = RX_BUFFER_SIZE;
 	}
 
 	bitStream->lastBitOut = 8;
 
-	if (MODULE_TYPE == MICROW_EMITTER) {
+	if (MODULE_TYPE == MICROW_EMITTER)
+	{
 		bitStream->lastByteIn = bitStream->length - 1;
 		bitStream->lastByteOut = bitStream->length - 1;
 	}
-	else {
+	else
+	{
 		bitStream->lastByteIn = bitStream->length - 1;
 		bitStream->lastByteOut = 0;
 	}
@@ -70,12 +106,12 @@ HAL_StatusTypeDef streamInit(struct sampleStream_Info * sampleStream, struct bit
 	bitStream->synchronized = 0;
 
     bitStream->stream = malloc(bitStream->length * sizeof(uint8_t));
-    if (bitStream->stream == NULL) {
+    if (bitStream->stream == NULL)
+    {
         return HAL_ERROR;
     }
 
     // SampleStream Initialization
-
 #if (MODULE_TYPE == MICROW_EMITTER)
 	sampleStream->hadc = hadc;
 #else
@@ -91,12 +127,14 @@ HAL_StatusTypeDef streamInit(struct sampleStream_Info * sampleStream, struct bit
 
 	sampleStream->stream = NULL;
     sampleStream->stream = malloc(sampleStream->length * sizeof(uint32_t));
-    if (sampleStream->stream == NULL) {
+    if (sampleStream->stream == NULL)
+    {
         return HAL_ERROR;
     }
 
     uint16_t i = 0;
-    for(i=0; i<sampleStream->length; i++) {
+    for(i=0; i<sampleStream->length; i++)
+    {
     	(sampleStream->stream)[i] = 0xFFFFFFFF;
     }
 
