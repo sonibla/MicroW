@@ -62,7 +62,7 @@ HAL_StatusTypeDef UARTTx_streamStart(struct bitStream_Info * bitStream)
  * 
  * @return HAL status (HAL_OK if no errors occured).
  * @note this function should be called after data has been sent
- * @warning UARTTx_streamStart() must be called at least once before to
+ * @warning UARTTx_streamStart() must be called at least once before
  * calling UARTTx_streamRestart()
  */
 HAL_StatusTypeDef UARTTx_streamRestart()

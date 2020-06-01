@@ -22,9 +22,6 @@
 #include "config.h"
 #include "links.h"
 
-/* Private typedef -----------------------------------------------------------*/
-/* Private defines -----------------------------------------------------------*/
-/* Private macros ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 
 struct sampleStream_Info * ADC_stream;
@@ -33,45 +30,25 @@ uint16_t maskSample;
 
 /* Private function prototypes -----------------------------------------------*/
 
-/*
- * mask creates a number in which n LSBs are ones
- */
 static uint64_t mask(uint8_t bits);
-
-/*
- * sendTrueByte saves a byte into the UART buffer without modifying data
- */
 static HAL_StatusTypeDef sendTrueByte(uint8_t byte);
-
-/*
- * sendByte saves a byte into the UART buffer, but toggles the LSB if byte == SYNC_SIGNAL
- * LSB between 0 and 7.
- */
 static HAL_StatusTypeDef sendByte(uint8_t byte, uint8_t LSB);
-
-/*
- * getSample returns the value of the sample to encode
- */
 static uint64_t getSample();
-
-/*
- * nextSample changes ADC_stream metadata to consider a new sample (the next one)
- */
 static void nextSample();
-
-/*
- * sampleAvailable checks if sample is available
- */
 static uint8_t sampleAvailable();
-
-/*
- * sendSyncSignal sends a synchronization byte instead of real data
- */
 static HAL_StatusTypeDef sendSyncSignal();
 
 /* Exported functions --------------------------------------------------------*/
 
-HAL_StatusTypeDef encoder_streamStart(struct sampleStream_Info * sampleStream, struct bitStream_Info * bitStream){
+/**
+ * @brief initializes a stream (an auto-completing bitStream according to a sampleStream)
+ * 
+ * @param sampleStream[IN] pointer to the sampleStream_Info structure
+ * @param bitStream[IN] pointer to the bitStream_Info structure
+ * @return HAL status (HAL_OK if no errors occured).
+ */
+HAL_StatusTypeDef encoder_streamStart(struct sampleStream_Info * sampleStream, struct bitStream_Info * bitStream)
+{
 	ADC_stream = sampleStream;
 	UART_stream = bitStream;
 
@@ -83,35 +60,70 @@ HAL_StatusTypeDef encoder_streamStart(struct sampleStream_Info * sampleStream, s
 	return sendSyncSignal();
 }
 
-HAL_StatusTypeDef encoder_streamRestart(){
+/**
+ * @brief starts a stream without overwriting existing parameters.
+ * 
+ * @return HAL status (HAL_OK if no errors occured).
+ * @warning encoder_streamStart() must be called at least once before to
+ * calling encoder_streamRestart()
+ */
+HAL_StatusTypeDef encoder_streamRestart()
+{
+	/* Check that the parameters already exists 
+	 * (ie encoder_streamStart() was called before)
+	 */
+	if ((UART_stream == NULL) || (ADC_stream == NULL))
+	{
+		return HAL_ERROR;
+	}
+	
 	ADC_stream->state = ACTIVE;
 	UART_stream->state = ACTIVE;
 
 	return sendSyncSignal();
 }
 
-HAL_StatusTypeDef encoder_streamUpdate(){
+/**
+ * @brief updates the streams structures fields : take data from ADC buffer to put it into the UART buffer
+ * 
+ * @return HAL status (HAL_OK if no errors occured).
+ * @note should be called at the end of a ADC buffer update to update the UART buffer
+ */
+HAL_StatusTypeDef encoder_streamUpdate()
+{
 	HAL_StatusTypeDef status = HAL_OK;
 	uint8_t bit;
 	uint8_t bit_value;
 	uint8_t byte;
 	uint8_t LSB;
 	uint64_t sample;
+	
+	/* Check that the parameters already exists 
+	 * (ie encoder_streamStart() was called before)
+	 */
+	if ((UART_stream == NULL) || (ADC_stream == NULL))
+	{
+		return HAL_ERROR;
+	}
 
-	if (ADC_stream->state == INACTIVE || UART_stream->state == INACTIVE) {
+	if (ADC_stream->state == INACTIVE || UART_stream->state == INACTIVE)
+	{
 		return HAL_BUSY;
 	}
 
 	uint64_t debug = 0;
-	while(sampleAvailable()) {
+	while(sampleAvailable())
+	{
 		debug++;
 		sample = getSample();
 
-		while (WORD_LENGTH - ADC_stream->bitsOut >= 8) {
+		while (WORD_LENGTH - ADC_stream->bitsOut >= 8)
+		{
 			// We can fill a full uint8_t with the last new sample
 			byte = 0;
 
-			for(bit = 0; bit < 8; bit++) {
+			for(bit = 0; bit < 8; bit++)
+			{
 				bit_value = (sample & (0x01 << (WORD_LENGTH - 1 - ADC_stream->bitsOut))) >> (WORD_LENGTH - 1 - ADC_stream->bitsOut);
 				byte += bit_value << (8 - bit);
 				ADC_stream->bitsOut += 1;
@@ -120,28 +132,34 @@ HAL_StatusTypeDef encoder_streamUpdate(){
 			// LSB = 7 because considered byte is fully inside a sample
 			LSB = 8 - 1;
 			status = sendByte(byte, LSB);
-			if (status != HAL_OK) {
+			if (status != HAL_OK)
+			{
 				return status;
 			}
 		}
 
 		// Check if the above process encoded an entire sample
-		if (WORD_LENGTH <= ADC_stream->bitsOut) {
+		if (WORD_LENGTH <= ADC_stream->bitsOut)
+		{
 			nextSample();
-			if (UART_stream->bytesSinceLastSyncSignal + 1 >= SYNC_PERIOD) {
+			if (UART_stream->bytesSinceLastSyncSignal + 1 >= SYNC_PERIOD)
+			{
 				status = sendSyncSignal();
-				if (status != HAL_OK) {
+				if (status != HAL_OK)
+				{
 					return status;
 				}
 			}
 		}
 		// Check if we can complete a byte using next sample
-		else if (sampleAvailable()) {
+		else if (sampleAvailable())
+		{
 			// Start to fill the byte with the lasts bits of selected sample
 			byte = 0;
 			bit = 0;
 
-			while(WORD_LENGTH > ADC_stream->bitsOut) {
+			while(WORD_LENGTH > ADC_stream->bitsOut)
+			{
 				bit_value = (sample & (0x01 << (WORD_LENGTH - 1 - ADC_stream->bitsOut))) >> (WORD_LENGTH - 1 - ADC_stream->bitsOut);
 				byte += bit_value << (8 - bit);
 				ADC_stream->bitsOut += 1;
@@ -153,7 +171,8 @@ HAL_StatusTypeDef encoder_streamUpdate(){
 			nextSample();
 			sample = getSample();
 
-			while(bit < 8) {
+			while(bit < 8)
+			{
 				bit_value = (sample & (0x01 << (WORD_LENGTH - 1 - ADC_stream->bitsOut))) >> (WORD_LENGTH - 1 - ADC_stream->bitsOut);
 				byte += bit_value << (8 - bit);
 				ADC_stream->bitsOut += 1;
@@ -161,7 +180,8 @@ HAL_StatusTypeDef encoder_streamUpdate(){
 			}
 
 			status = sendByte(byte, LSB);
-			if (status != HAL_OK) {
+			if (status != HAL_OK)
+			{
 				return status;
 			}
 		}
@@ -171,40 +191,122 @@ HAL_StatusTypeDef encoder_streamUpdate(){
 	return HAL_OK;
 }
 
-static uint8_t sampleAvailable() {
-	if (ADC_stream->lastSampleIn != ADC_stream->lastSampleOut) {
+/**
+ * @brief stops a running stream.
+ * 
+ * @return HAL status (HAL_OK if no errors occured).
+ */
+HAL_StatusTypeDef encoder_streamStop()
+{
+	/* Check that the parameters already exists 
+	 * (ie encoder_streamStart() was called before)
+	 */
+	if ((UART_stream == NULL) || (ADC_stream == NULL))
+	{
+		return HAL_ERROR;
+	}
+	
+	ADC_stream->state = INACTIVE;
+	UART_stream->state = INACTIVE;
+
+	return HAL_OK;
+}
+
+/**
+ * @brief checks if sample is available
+ * 
+ * @return 1 if a sample is available 0 else
+ */
+static uint8_t sampleAvailable()
+{
+	/* Check that the parameters already exists 
+	 * (ie encoder_streamStart() was called before)
+	 */
+	if (ADC_stream == NULL)
+	{
+		return HAL_ERROR;
+	}
+	
+	if (ADC_stream->lastSampleIn != ADC_stream->lastSampleOut)
+	{
 		return 1;
 	}
-	else {
+	else
+	{
 		return 0;
 	}
 }
 
-static void nextSample() {
+/**
+ * @brief changes ADC_stream metadata to consider a new sample (the next one)
+ */
+static void nextSample()
+{
+	/* Check that the parameters already exists 
+	 * (ie encoder_streamStart() was called before)
+	 */
+	if (ADC_stream == NULL)
+	{
+		return HAL_ERROR;
+	}
+	
 	ADC_stream->lastSampleOut += 1;
-	if (ADC_stream->lastSampleOut >= ADC_stream->length) {
+	if (ADC_stream->lastSampleOut >= ADC_stream->length)
+	{
 		ADC_stream->lastSampleOut = 0;
 	}
 	ADC_stream->bitsOut = 0;
 }
 
-static uint64_t getSample() {
-	if (ADC_stream->lastSampleOut + 1 < ADC_stream->length) {
+/**
+ * @brief returns the value of the next sample to encode
+ * 
+ * @return the sample, as a uint64 number
+ */
+static uint64_t getSample()
+{
+	/* Check that the parameters already exists 
+	 * (ie encoder_streamStart() was called before)
+	 */
+	if (ADC_stream == NULL)
+	{
+		return HAL_ERROR;
+	}
+	
+	if (ADC_stream->lastSampleOut + 1 < ADC_stream->length)
+	{
 		return ((ADC_stream->stream)[1 + ADC_stream->lastSampleOut]) & maskSample;
 	}
-	else {
+	else
+	{
 		return ((ADC_stream->stream)[1 + ADC_stream->lastSampleOut - ADC_stream->length]) & maskSample;
 	}
 }
 
-static HAL_StatusTypeDef sendTrueByte(uint8_t byte) {
+/**
+ * @brief saves a byte into the UART buffer without modifying data
+ * 
+ * @param byte[IN] the data to save into the buffer
+ * @return HAL status (HAL_OK if no errors occured).
+ */
+static HAL_StatusTypeDef sendTrueByte(uint8_t byte)
+{
+	/* Check that the parameters already exists 
+	 * (ie encoder_streamStart() was called before)
+	 */
+	if (UART_stream == NULL)
+	{
+		return HAL_ERROR;
+	}
 
 	UART_stream->lastByteIn += 1;
-	if (UART_stream->lastByteIn >= UART_stream->length) {
+	if (UART_stream->lastByteIn >= UART_stream->length)
+	{
 		UART_stream->lastByteIn = 0;
 	}
 
-	if (UART_stream->lastByteIn == UART_stream->lastByteOut) {
+	if (UART_stream->lastByteIn == UART_stream->lastByteOut)
+	{
 		// Overrun error (UART too slow)
 		return HAL_ERROR;
 	}
@@ -214,22 +316,34 @@ static HAL_StatusTypeDef sendTrueByte(uint8_t byte) {
 	return HAL_OK;
 }
 
-static HAL_StatusTypeDef sendByte(uint8_t byte, uint8_t LSB) {
+/**
+ * @brief saves a byte into the UART buffer, but toggles the LSB if byte == SYNC_SIGNAL
+ * 
+ * @param byte[IN] the data to save into the buffer
+ * @param LSB[IN] the position of the least significant bit (between 0 and 7)
+ * @return HAL status (HAL_OK if no errors occured).
+ */
+static HAL_StatusTypeDef sendByte(uint8_t byte, uint8_t LSB)
+{
 	uint8_t mask;
 
-	if (LSB >= 8) {
+	if (LSB >= 8)
+	{
 		// Default value in case of error:
 		LSB = 8 - 1;
 	}
 
 	mask = 0x80 >> LSB;
 
-	if (byte == SYNC_SIGNAL) {
-		if (byte & mask) {
+	if (byte == SYNC_SIGNAL)
+	{
+		if (byte & mask)
+		{
 			// byte's LSB is a 1
 			byte &= ~mask;
 		}
-		else {
+		else
+		{
 			// byte's LSB is a 0
 			byte |= mask;
 		}
@@ -238,15 +352,30 @@ static HAL_StatusTypeDef sendByte(uint8_t byte, uint8_t LSB) {
 	return sendTrueByte(byte);
 }
 
+/**
+ * @brief sends a synchronization byte instead of real data
+ * 
+ * @return HAL status (HAL_OK if no errors occured).
+ */
 static HAL_StatusTypeDef sendSyncSignal() {
+	/* Check that the parameters already exists 
+	 * (ie encoder_streamStart() was called before)
+	 */
+	if ((UART_stream == NULL) || (ADC_stream == NULL))
+	{
+		return HAL_ERROR;
+	}
+	
 	HAL_StatusTypeDef status = HAL_OK;
 
 	status = sendTrueByte(SYNC_SIGNAL);
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return status;
 	}
 
-	if (ADC_stream->bitsOut != 0) {
+	if (ADC_stream->bitsOut != 0)
+	{
 		nextSample();
 	}
 	UART_stream->bytesSinceLastSyncSignal = 0;
@@ -254,18 +383,20 @@ static HAL_StatusTypeDef sendSyncSignal() {
 	return HAL_OK;
 }
 
-HAL_StatusTypeDef encoder_streamStop(){
-	ADC_stream->state = INACTIVE;
-	UART_stream->state = INACTIVE;
-
-	return HAL_OK;
-}
-
-static uint64_t mask(uint8_t bits) {
+/**
+ * @brief creates a number in which n LSBs are ones
+ * For example 00011111 in binary if n = 5
+ * 
+ * @param bits[IN] the number of ones
+ * @return the mask
+ */
+static uint64_t mask(uint8_t bits)
+{
 	uint8_t bit;
 	uint64_t mask_var = 0;
 
-	for (bit = 0; bit < bits; bit++) {
+	for (bit = 0; bit < bits; bit++)
+	{
 		mask_var <<= 1;
 		mask_var += 1;
 	}
