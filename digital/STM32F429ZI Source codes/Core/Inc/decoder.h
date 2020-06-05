@@ -27,33 +27,12 @@ extern "C" {
 #include "stm32f4xx_hal.h"
 #include "types.h"
 
-/* Private includes ----------------------------------------------------------*/
-/* Exported types ------------------------------------------------------------*/
-/* Exported constants --------------------------------------------------------*/
-/* Exported macro ------------------------------------------------------------*/
 /* Exported functions prototypes ---------------------------------------------*/
 
-/*
- * decoder_streamStart initializes a stream to continuously decode data
- */
 HAL_StatusTypeDef decoder_streamStart(struct bitStream_Info * bitStream, struct sampleStream_Info * sampleStream);
-
-/*
- * decoder_streamRestart starts a stream without overwriting existing parameters.
- */
 HAL_StatusTypeDef decoder_streamRestart();
-
-/*
- * decoder_streamUpdate should be called at the end of new data saving
- */
 HAL_StatusTypeDef decoder_streamUpdate();
-
-/*
- * decoder_streamStop stops a running stream.
- */
 HAL_StatusTypeDef decoder_streamStop();
-
-/* Private defines -----------------------------------------------------------*/
 
 #ifdef __cplusplus
 }
