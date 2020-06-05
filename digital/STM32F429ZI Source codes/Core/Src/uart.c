@@ -257,17 +257,15 @@ HAL_StatusTypeDef UARTRx_streamStop()
 static void saveByte(uint8_t byte)
 {
 	/* Check that UART parameters already exists */
-	if (UART_stream == NULL)
+	if (UART_stream != NULL)
 	{
-		return HAL_ERROR;
+		UART_stream->lastByteIn += 1;
+		if (UART_stream->lastByteIn >= UART_stream->length)
+		{
+			UART_stream->lastByteIn = 0;
+		}
+		(UART_stream->stream)[UART_stream->lastByteIn] = byte;
 	}
-	
-	UART_stream->lastByteIn += 1;
-	if (UART_stream->lastByteIn >= UART_stream->length)
-	{
-		UART_stream->lastByteIn = 0;
-	}
-	(UART_stream->stream)[UART_stream->lastByteIn] = byte;
 }
 
 /*=============================================================================
@@ -284,7 +282,7 @@ static uint8_t dataAvailable()
 	/* Check that UART parameters already exists */
 	if (UART_stream == NULL)
 	{
-		return HAL_ERROR;
+		return 0;
 	}
 	// Check if there is new data in the buffer
 	if (UART_stream->lastByteIn != UART_stream->lastByteOut)

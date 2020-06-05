@@ -22,9 +22,6 @@
 #include "config.h"
 #include "types.h"
 
-/* Private typedef -----------------------------------------------------------*/
-/* Private defines -----------------------------------------------------------*/
-/* Private macros ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 
 struct sampleStream_Info * DAC_stream;
@@ -32,19 +29,20 @@ uint16_t maskSample;
 
 /* Private function prototypes -----------------------------------------------*/
 
-/*
- * mask creates a number in which n LSBs are ones
- */
 static uint64_t mask(uint8_t bits);
-
-/*
- * sampleAvailable checks if a new sample is available
- */
 static uint8_t sampleAvailable();
 
 /* Exported functions --------------------------------------------------------*/
 
-HAL_StatusTypeDef DAC_streamStart(struct sampleStream_Info * sampleStream) {
+/**
+ * @brief initializes a stream to continuously output analog data
+ * 
+ * @param sampleStream[IN] pointer to the sampleStream_Info structure
+ * @return HAL status (HAL_OK if no errors occured).
+ * @note The DAC will automatically start
+ */
+HAL_StatusTypeDef DAC_streamStart(struct sampleStream_Info * sampleStream)
+{
 	DAC_stream = sampleStream;
 	DAC_stream->state = ACTIVE;
 
@@ -53,51 +51,107 @@ HAL_StatusTypeDef DAC_streamStart(struct sampleStream_Info * sampleStream) {
 	return HAL_DAC_Start(DAC_stream->hdac, DAC_stream->DAC_Channel);
 }
 
-HAL_StatusTypeDef DAC_streamRestart() {
+/**
+ * @brief starts a stream without overwriting existing parameters.
+ * 
+ * @return HAL status (HAL_OK if no errors occured).
+ */
+HAL_StatusTypeDef DAC_streamRestart()
+{
+	if (DAC_stream == NULL)
+	{
+		return HAL_ERROR;
+	}
+	
 	return HAL_DAC_Start(DAC_stream->hdac, DAC_stream->DAC_Channel);
 }
 
-HAL_StatusTypeDef DAC_streamUpdate() {
+/**
+ * @brief should be called at the end of new data saving
+ * 
+ * @return HAL status (HAL_OK if no errors occured).
+ */
+HAL_StatusTypeDef DAC_streamUpdate()
+{
 	uint64_t value;
+	if (DAC_stream == NULL)
+	{
+		return HAL_ERROR;
+	}
 
-	if (sampleAvailable()) {
+	if (sampleAvailable())
+	{
 		DAC_stream->lastSampleOut += 1;
-		if (DAC_stream->lastSampleOut >= DAC_stream->length) {
+		if (DAC_stream->lastSampleOut >= DAC_stream->length)
+		{
 			DAC_stream->lastSampleOut = 0;
 		}
 		value = (DAC_stream->stream)[DAC_stream->lastSampleOut];
 
-		if ((value & maskSample) != value) {
+		if ((value & maskSample) != value)
+		{
 			return HAL_ERROR;
 		}
 
 		return HAL_DAC_SetValue(DAC_stream->hdac, DAC_stream->DAC_Channel, DAC_ALIGN_12B_R, (uint32_t)value);
 	}
-	else {
+	else
+	{
 		return HAL_OK;
 	}
 }
 
-static uint8_t sampleAvailable() {
-	if (DAC_stream->lastSampleIn != DAC_stream->lastSampleOut) {
-		return 1;
+/**
+ * @brief stops a running stream.
+ * 
+ * @return HAL status (HAL_OK if no errors occured).
+ */
+HAL_StatusTypeDef DAC_streamStop()
+{
+	if (DAC_stream == NULL)
+	{
+		return HAL_ERROR;
 	}
-	else {
-		return 0;
-	}
-}
-
-HAL_StatusTypeDef DAC_streamStop() {
+	
 	DAC_stream->state = INACTIVE;
 
 	return HAL_DAC_Stop(DAC_stream->hdac, DAC_stream->DAC_Channel);
 }
 
-static uint64_t mask(uint8_t bits) {
+/**
+ * @brief checks if sample is available
+ * 
+ * @return 1 if a sample is available 0 else
+ */
+static uint8_t sampleAvailable()
+{
+	if (DAC_stream == NULL)
+	{
+		return 0;
+	}
+	
+	if (DAC_stream->lastSampleIn != DAC_stream->lastSampleOut)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/**
+ * @brief creates a number in which n LSBs are ones
+ * 
+ * @return the mask
+ */
+static uint64_t mask(uint8_t bits)
+{
 	uint8_t bit;
 	uint64_t mask_var = 0;
 
-	for (bit = 0; bit < bits; bit++) {
+	for (bit = 0; bit < bits; bit++)
+	{
 		mask_var <<= 1;
 		mask_var += 1;
 	}

@@ -27,33 +27,12 @@ extern "C" {
 #include "stm32f4xx_hal.h"
 #include "types.h"
 
-/* Private includes ----------------------------------------------------------*/
-/* Exported types ------------------------------------------------------------*/
-/* Exported constants --------------------------------------------------------*/
-/* Exported macro ------------------------------------------------------------*/
 /* Exported functions prototypes ---------------------------------------------*/
 
-/*
- * DAC_streamStart initializes a stream to continuously output analog data
- */
 HAL_StatusTypeDef DAC_streamStart(struct sampleStream_Info * sampleStream);
-
-/*
- * DAC_streamRestart starts a stream without overwriting existing parameters.
- */
 HAL_StatusTypeDef DAC_streamRestart();
-
-/*
- * DAC_streamUpdate should be called at the end of new data saving
- */
 HAL_StatusTypeDef DAC_streamUpdate();
-
-/*
- * DAC_streamStop stops a running stream.
- */
 HAL_StatusTypeDef DAC_streamStop();
-
-/* Private defines -----------------------------------------------------------*/
 
 #ifdef __cplusplus
 }

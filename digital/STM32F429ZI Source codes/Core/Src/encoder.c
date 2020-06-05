@@ -224,7 +224,7 @@ static uint8_t sampleAvailable()
 	 */
 	if (ADC_stream == NULL)
 	{
-		return HAL_ERROR;
+		return 0;
 	}
 	
 	if (ADC_stream->lastSampleIn != ADC_stream->lastSampleOut)
@@ -245,23 +245,21 @@ static void nextSample()
 	/* Check that the parameters already exists 
 	 * (ie encoder_streamStart() was called before)
 	 */
-	if (ADC_stream == NULL)
+	if (ADC_stream != NULL)
 	{
-		return HAL_ERROR;
+		ADC_stream->lastSampleOut += 1;
+		if (ADC_stream->lastSampleOut >= ADC_stream->length)
+		{
+			ADC_stream->lastSampleOut = 0;
+		}
+		ADC_stream->bitsOut = 0;
 	}
-	
-	ADC_stream->lastSampleOut += 1;
-	if (ADC_stream->lastSampleOut >= ADC_stream->length)
-	{
-		ADC_stream->lastSampleOut = 0;
-	}
-	ADC_stream->bitsOut = 0;
 }
 
 /**
  * @brief returns the value of the next sample to encode
  * 
- * @return the sample, as a uint64 number
+ * @return the sample, as a uint64 number. 0xFFFFFFFFFFFFFFFF in case of error
  */
 static uint64_t getSample()
 {
@@ -270,7 +268,7 @@ static uint64_t getSample()
 	 */
 	if (ADC_stream == NULL)
 	{
-		return HAL_ERROR;
+		return 0xFFFFFFFFFFFFFFFF;
 	}
 	
 	if (ADC_stream->lastSampleOut + 1 < ADC_stream->length)
