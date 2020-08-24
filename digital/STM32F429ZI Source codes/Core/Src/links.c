@@ -2,6 +2,10 @@
   ******************************************************************************
   * @file           : links.c
   * @brief          : Main API, manages links between lower API of MicroW
+  * 
+  * The goal of this API is to create links between lower lever MicroW APIs :
+  * calling the right function at the right time and managing events, for
+  * example end of data transfers, errors...
   ******************************************************************************
   * @attention
   *
@@ -27,9 +31,6 @@
 #include "types.h"
 #include "timer.h"
 
-/* Private defines -----------------------------------------------------------*/
-/* Private typedef -----------------------------------------------------------*/
-/* Private macros ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 
 struct peripherals_Info
@@ -48,19 +49,8 @@ struct bitStream_Info bitStream;
 
 /* Private function prototypes -----------------------------------------------*/
 
-/*
- * Error_Handler is called whenever an unexpected error happen
- */
 static void Error_Handler(void);
-
-/*
- * receiver_restart starts the receiver without changing the parameters
- */
 static HAL_StatusTypeDef receiver_restart();
-
-/*
- * emitter_restart starts the receiver without changing the parameters
- */
 static HAL_StatusTypeDef emitter_restart();
 
 /* Exported functions --------------------------------------------------------*/
@@ -69,7 +59,16 @@ static HAL_StatusTypeDef emitter_restart();
                     ##### Main API functions #####
 =============================================================================*/
 
-HAL_StatusTypeDef emitter_start(UART_HandleTypeDef * huart, ADC_HandleTypeDef * hadc, TIM_HandleTypeDef * htim) {
+/**
+ * @brief emitter_start does everything necessary to automatically receive analog values and send them via serial.
+ * @param huart[in] pointer to a USART_HandleTypeDef structure that contains the configuration information for the specified USART module.
+ * @param hadc[in] pointer to a ADC_HandleTypeDef structure that contains the configuration information for the specified ADC.
+ * @param htim[in] pointer to a TIM_HandleTypeDef structure that contains the configuration information for TIM module.
+ * @return HAL status (HAL_OK if no errors occured).
+ * @note Non blocking function
+ */
+HAL_StatusTypeDef emitter_start(UART_HandleTypeDef * huart, ADC_HandleTypeDef * hadc, TIM_HandleTypeDef * htim)
+{
 	HAL_StatusTypeDef status = HAL_OK;
 #if (MODULE_TYPE == MICROW_EMITTER)
 	peripherals.huart = huart;
@@ -77,59 +76,75 @@ HAL_StatusTypeDef emitter_start(UART_HandleTypeDef * huart, ADC_HandleTypeDef * 
 	peripherals.htim = htim;
 
 	status = streamInit(&sampleStream, &bitStream, hadc, huart);
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return status;
 	}
 
 	status = UARTTx_streamStart(&bitStream);
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return status;
 	}
 
 	status = encoder_streamStart(&sampleStream, &bitStream);
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return status;
 	}
 
 	status = ADC_streamStart(&sampleStream);
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return status;
 	}
 
 	status = Timer_Start(htim);
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return status;
 	}
 #else
 	status = HAL_ERROR;
 #endif
-	if (ERROR_LED && status == HAL_OK) {
+	if (ERROR_LED && (status == HAL_OK))
+	{
 		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_14, GPIO_PIN_RESET);
 	}
 
 	return status;
 }
 
-HAL_StatusTypeDef emitter_stop() {
+/**
+ * @brief emitter_stop does everything necessary to stop the emitter
+ * @return HAL status (HAL_OK if no errors occured).
+ * @note Non blocking function
+ */
+HAL_StatusTypeDef emitter_stop()
+{
 	HAL_StatusTypeDef status = HAL_OK;
 #if (MODULE_TYPE == MICROW_EMITTER)
 	status = ADC_streamStop();
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return status;
 	}
 
 	status = encoder_streamStop();
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return status;
 	}
 
 	status = UARTTx_streamStop();
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return status;
 	}
 
 	status = streamFree(&sampleStream, &bitStream);
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return status;
 	}
 #else
@@ -138,7 +153,18 @@ HAL_StatusTypeDef emitter_stop() {
 	return status;
 }
 
-HAL_StatusTypeDef receiver_start(UART_HandleTypeDef * huart, DAC_HandleTypeDef * hdac, uint32_t DAC_Channel, TIM_HandleTypeDef * htim) {
+
+/**
+ * @brief receiver_start does everything necessary to automatically receive a serial stream and convert received values into an analog signal.
+ * @param huart[in] pointer to a USART_HandleTypeDef structure that contains the configuration information for the specified USART module.
+ * @param hdac[in] pointer to a DAC_HandleTypeDef structure that contains the configuration information for the specified DAC.
+ * @param DAC_Channel[in] The selected DAC channel. This parameter can be one of the following values: DAC_CHANNEL_1 or DAC_CHANNEL_2
+ * @param htim[in] pointer to a TIM_HandleTypeDef structure that contains the configuration information for TIM module.
+ * @return HAL status (HAL_OK if no errors occured).
+ * @note Non blocking function
+ */
+HAL_StatusTypeDef receiver_start(UART_HandleTypeDef * huart, DAC_HandleTypeDef * hdac, uint32_t DAC_Channel, TIM_HandleTypeDef * htim)
+{
 	HAL_StatusTypeDef status = HAL_OK;
 #if (MODULE_TYPE == MICROW_RECEIVER)
 	peripherals.huart = huart;
@@ -147,59 +173,75 @@ HAL_StatusTypeDef receiver_start(UART_HandleTypeDef * huart, DAC_HandleTypeDef *
 	peripherals.htim = htim;
 
 	status = streamInit(&sampleStream, &bitStream, hdac, DAC_Channel, huart);
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return status;
 	}
 
 	status = Timer_Start(htim);
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return status;
 	}
 
 	status = DAC_streamStart(&sampleStream);
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return status;
 	}
 
 	status = decoder_streamStart(&bitStream, &sampleStream);
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return status;
 	}
 
 	status = UARTRx_streamStart(&bitStream);
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return status;
 	}
 #else
 	status = HAL_ERROR;
 #endif
-	if (ERROR_LED && status == HAL_OK) {
+	if (ERROR_LED && (status == HAL_OK))
+	{
 		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_14, GPIO_PIN_RESET);
 	}
 
 	return status;
 }
 
-HAL_StatusTypeDef receiver_stop() {
+/**
+ * @brief receiver_stop does everything necessary to stop the receiver
+ * @return HAL status (HAL_OK if no errors occured).
+ * @note Non blocking function
+ */
+HAL_StatusTypeDef receiver_stop()
+{
 	HAL_StatusTypeDef status = HAL_OK;
 #if (MODULE_TYPE == MICROW_RECEIVER)
 	status = UARTRx_streamStop();
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return status;
 	}
 
 	status = decoder_streamStop();
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return status;
 	}
 
 	status = DAC_streamStop();
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return status;
 	}
 
 	status = streamFree(&sampleStream, &bitStream);
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return status;
 	}
 #else
@@ -213,12 +255,19 @@ HAL_StatusTypeDef receiver_stop() {
                   ##### Restart functions #####
 =============================================================================*/
 
-static HAL_StatusTypeDef emitter_restart() {
+/**
+ * @brief emitter_restart starts the emitter without changing existing configuration
+ * @return HAL status (HAL_OK if no errors occured).
+ * @note Non blocking function
+ */
+static HAL_StatusTypeDef emitter_restart()
+{
 	HAL_StatusTypeDef status = HAL_OK;
 #if (MODULE_TYPE == MICROW_EMITTER)
 
 	status = emitter_stop();
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return status;
 	}
 
@@ -229,12 +278,19 @@ static HAL_StatusTypeDef emitter_restart() {
 	return status;
 }
 
-static HAL_StatusTypeDef receiver_restart() {
+/**
+ * @brief receiver_restart starts the receiver without changing existing configuration
+ * @return HAL status (HAL_OK if no errors occured).
+ * @note Non blocking function
+ */
+static HAL_StatusTypeDef receiver_restart()
+{
 	HAL_StatusTypeDef status = HAL_OK;
 #if (MODULE_TYPE == MICROW_RECEIVER)
 
 	status = receiver_stop();
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return status;
 	}
 
@@ -249,45 +305,54 @@ static HAL_StatusTypeDef receiver_restart() {
                   ##### HAL Callback functions #####
 =============================================================================*/
 
-// ADC
-
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef * hadc) {
+/*
+ * Please refer to HAL documentation for the detailed manual of those functions.
+ * Those functions are called by HAL when a specific event happens.
+ */
+ 
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef * hadc)
+{
 	HAL_StatusTypeDef status = HAL_OK;
 
 	status = ADC_streamUpdate();
 
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		Error_Handler();
 	}
 }
 
-void HAL_ADC_ErrorCallback(ADC_HandleTypeDef * hadc) {
+void HAL_ADC_ErrorCallback(ADC_HandleTypeDef * hadc)
+{
 	Error_Handler();
 }
 
-// UART
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef * huart) {
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef * huart)
+{
 	HAL_StatusTypeDef status = HAL_OK;
 
 	status = UARTRx_streamUpdate();
 
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		Error_Handler();
 	}
 }
 
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef * huart) {
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef * huart)
+{
 	HAL_StatusTypeDef status = HAL_OK;
 
 	status = UARTTx_streamRestart();
 
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		Error_Handler();
 	}
 }
 
-void HAL_UART_ErrorCallback(UART_HandleTypeDef * huart) {
+void HAL_UART_ErrorCallback(UART_HandleTypeDef * huart)
+{
 	Error_Handler();
 }
 
@@ -295,30 +360,42 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef * huart) {
                       ##### "Handle" functions #####
 =============================================================================*/
 
-static void Error_Handler() {
+/**
+ * @brief Error_Handler is called whenever an unexpected error happen
+ * @note Its behaviour if configurable thants to defines in config.h
+ */
+static void Error_Handler()
+{
 	HAL_StatusTypeDef status = HAL_OK;
 
-	if (ERROR_LED) {
+	if (ERROR_LED)
+	{
 		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_14, GPIO_PIN_SET);
 	}
 
-	if (ERROR_DELAY) {
+	if (ERROR_DELAY)
+	{
 		HAL_Delay(ERROR_DELAY);
 	}
 
-	if (ERROR_HANDLING == STOP || ERROR_HANDLING == RESTART) {
+	if ((ERROR_HANDLING == STOP) || (ERROR_HANDLING == RESTART))
+	{
 		receiver_stop();
 		emitter_stop();
 	}
 
-	if (ERROR_HANDLING == RESTART) {
-		if (MODULE_TYPE == MICROW_RECEIVER) {
+	if (ERROR_HANDLING == RESTART)
+	{
+		if (MODULE_TYPE == MICROW_RECEIVER)
+		{
 			status = receiver_restart();
 		}
-		else {
+		else
+		{
 			status = emitter_restart();
 		}
-		if (status != HAL_OK) {
+		if (status != HAL_OK)
+		{
 			/*
 			 * Oh no ! Error_Handler has encountered an error !
 			 * No problem, let's call Error_Handler for help
@@ -327,56 +404,81 @@ static void Error_Handler() {
 		}
 	}
 
-	if (ERROR_HANDLING == INFINITE_LOOP) {
-		while (1) {
+	if (ERROR_HANDLING == INFINITE_LOOP)
+	{
+		while (1)
+		{
 
 		}
 	}
 }
 
-void Timer_RisingEdgeHandle() {
+/**
+ * @brief Timer_RisingEdgeHandle will be called by low-level MicroW APIs on every rising edge of the timer
+ */
+void Timer_RisingEdgeHandle()
+{
 	HAL_StatusTypeDef status = HAL_OK;
 
-	if (sampleStream.state == ACTIVE) {
-		if (MODULE_TYPE == MICROW_EMITTER) {
+	if (sampleStream.state == ACTIVE)
+	{
+		if (MODULE_TYPE == MICROW_EMITTER)
+		{
 			status = ADC_streamRestart();
 		}
-		else {
+		else
+		{
 			status = DAC_streamUpdate();
 		}
 	}
 
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		Error_Handler();
 	}
 }
 
-void ADC_FinishedHandle() {
+/**
+ * @brief ADC_FinishedHandle will be called by ADC API when a new value has been successfully stored
+ */
+void ADC_FinishedHandle()
+{
 	HAL_StatusTypeDef status = HAL_OK;
 
 	status = encoder_streamUpdate();
 
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		Error_Handler();
 	}
 }
 
-void encode_FinishedHandle() {
+/**
+ * @brief encode_FinishedHandle will be called by encoder API when the UART buffer out has been updated
+ */
+void encode_FinishedHandle()
+{
 	HAL_StatusTypeDef status = HAL_OK;
 
 	status = UARTTx_streamUpdate();
 
-	if (status != HAL_OK && status != HAL_BUSY) {
+	if ((status != HAL_OK) && (status != HAL_BUSY))
+	{
 		Error_Handler();
 	}
 }
 
-void UARTRx_FinishedHandle() {
+/**
+ * @brief UARTRx_FinishedHandle will be called by UART API when the UART buffer in has been updated
+ */
+void UARTRx_FinishedHandle()
+{
 	HAL_StatusTypeDef status = HAL_OK;
 
 	status = decoder_streamUpdate();
 
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		Error_Handler();
 	}
 }
